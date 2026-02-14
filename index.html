@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dopo — Your Content Library</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #14141f;
+    --surface-hover: #1c1c2e;
+    --border: #2a2a3d;
+    --text: #e8e8ef;
+    --text-muted: #8888a0;
+    --text-dim: #5a5a72;
+    --accent: #ff6b35;
+    --accent-glow: rgba(255, 107, 53, 0.15);
+    --youtube: #ff0033;
+    --instagram: #e1306c;
+    --tiktok: #00f2ea;
+    --success: #34d399;
+    --error: #f87171;
+    --radius: 12px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'DM Sans', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  .app { max-width: 900px; margin: 0 auto; padding: 24px 20px 100px; }
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 0 32px; border-bottom: 1px solid var(--border); margin-bottom: 32px;
+  }
+  .logo {
+    font-family: 'Space Mono', monospace; font-size: 28px; font-weight: 700;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, var(--accent), #ff9a6c);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .logo-sub { font-size: 12px; color: var(--text-dim); font-family: 'Space Mono', monospace; letter-spacing: 2px; text-transform: uppercase; }
+  .user-badge { font-size: 12px; color: var(--text-muted); background: var(--surface); padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); }
+  .ingest-section { margin-bottom: 32px; }
+  .ingest-bar { display: flex; gap: 10px; align-items: stretch; }
+  .ingest-input {
+    flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 18px; color: var(--text); font-size: 15px; font-family: 'DM Sans', sans-serif;
+    outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .ingest-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+  .ingest-input::placeholder { color: var(--text-dim); }
+  .ingest-btn {
+    background: var(--accent); color: #fff; border: none; border-radius: var(--radius);
+    padding: 14px 24px; font-size: 15px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+    cursor: pointer; transition: all 0.2s; white-space: nowrap; display: flex; align-items: center; gap: 8px;
+  }
+  .ingest-btn:hover:not(:disabled) { background: #ff8555; transform: translateY(-1px); box-shadow: 0 4px 16px var(--accent-glow); }
+  .ingest-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .ingest-status { margin-top: 10px; font-size: 13px; padding: 10px 14px; border-radius: 8px; display: none; }
+  .ingest-status.show { display: block; }
+  .ingest-status.success { background: rgba(52, 211, 153, 0.1); color: var(--success); border: 1px solid rgba(52, 211, 153, 0.2); }
+  .ingest-status.error { background: rgba(248, 113, 113, 0.1); color: var(--error); border: 1px solid rgba(248, 113, 113, 0.2); }
+  .ingest-status.loading { background: rgba(255, 107, 53, 0.1); color: var(--accent); border: 1px solid rgba(255, 107, 53, 0.2); }
+  .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+  .search-input {
+    flex: 1; min-width: 200px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 10px 16px 10px 38px; color: var(--text); font-size: 14px;
+    font-family: 'DM Sans', sans-serif; outline: none; transition: border-color 0.2s;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%235a5a72' viewBox='0 0 24 24'%3E%3Cpath d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' stroke='%235a5a72' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: 12px center;
+  }
+  .search-input:focus { border-color: var(--accent); }
+  .filter-btn {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 14px; color: var(--text-muted); font-size: 13px; font-family: 'DM Sans', sans-serif;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .filter-btn:hover { background: var(--surface-hover); color: var(--text); }
+  .filter-btn.active { background: var(--accent-glow); color: var(--accent); border-color: var(--accent); }
+  .stats-bar { font-size: 12px; color: var(--text-dim); margin-bottom: 16px; font-family: 'Space Mono', monospace; }
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    overflow: hidden; transition: all 0.2s; cursor: default; position: relative;
+  }
+  .card:hover { border-color: #3a3a4d; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+  .card-thumb { width: 100%; height: 160px; object-fit: cover; display: block; background: var(--surface-hover); }
+  .card-thumb-placeholder { width: 100%; height: 160px; display: flex; align-items: center; justify-content: center; background: var(--surface-hover); font-size: 40px; }
+  .card-body { padding: 14px 16px 16px; }
+  .card-platform {
+    display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; padding: 3px 8px; border-radius: 4px;
+  }
+  .card-platform.youtube { color: var(--youtube); background: rgba(255,0,51,0.1); }
+  .card-platform.instagram { color: var(--instagram); background: rgba(225,48,108,0.1); }
+  .card-platform.tiktok { color: var(--tiktok); background: rgba(0,242,234,0.1); }
+  .card-platform.other { color: var(--text-muted); background: rgba(136,136,160,0.1); }
+  .card-content-type { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-left: 6px; }
+  .card-title { font-size: 14px; font-weight: 500; line-height: 1.4; color: var(--text); margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .card-creator { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+  .card-creator-handle { color: var(--accent); font-weight: 500; font-size: 12px; }
+  .card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+  .card-tag { font-size: 11px; color: var(--text-dim); background: rgba(136,136,160,0.1); padding: 2px 8px; border-radius: 4px; }
+  .card-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .card-date { font-size: 11px; color: var(--text-dim); font-family: 'Space Mono', monospace; }
+  .card-actions { display: flex; gap: 6px; align-items: center; }
+  .card-action { background: none; border: none; color: var(--text-dim); cursor: pointer; padding: 4px 6px; border-radius: 4px; font-size: 14px; transition: all 0.15s; }
+  .card-action:hover { color: var(--text); background: var(--surface-hover); }
+  .card-action.favorited { color: var(--accent); }
+  .card-link { font-size: 11px; color: var(--accent); text-decoration: none; font-weight: 500; transition: opacity 0.15s; }
+  .card-link:hover { opacity: 0.8; }
+  .card-enrichment { position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; border-radius: 50%; }
+  .card-enrichment.complete { background: var(--success); }
+  .card-enrichment.pending { background: #fbbf24; }
+  .card-enrichment.failed { background: var(--error); }
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text-dim); }
+  .empty-state-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+  .empty-state h3 { color: var(--text-muted); font-size: 18px; margin-bottom: 8px; }
+  .empty-state p { font-size: 14px; max-width: 400px; margin: 0 auto; line-height: 1.6; }
+  .auth-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(8px); }
+  .auth-modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 40px; width: 100%; max-width: 400px; text-align: center; }
+  .auth-modal h2 { font-family: 'Space Mono', monospace; font-size: 24px; margin-bottom: 8px; background: linear-gradient(135deg, var(--accent), #ff9a6c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .auth-modal p { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
+  .auth-field { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; color: var(--text); font-size: 14px; font-family: 'DM Sans', sans-serif; outline: none; margin-bottom: 12px; transition: border-color 0.2s; }
+  .auth-field:focus { border-color: var(--accent); }
+  .auth-submit { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 12px; font-size: 15px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: background 0.2s; margin-top: 4px; }
+  .auth-submit:hover { background: #ff8555; }
+  .auth-toggle { margin-top: 16px; font-size: 13px; color: var(--text-muted); }
+  .auth-toggle a { color: var(--accent); cursor: pointer; text-decoration: none; }
+  .auth-error { color: var(--error); font-size: 13px; margin-top: 10px; display: none; }
+  .auth-error.show { display: block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner { width: 18px; height: 18px; border: 2px solid transparent; border-top-color: currentColor; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
+  @media (max-width: 600px) { .cards-grid { grid-template-columns: 1fr; } .ingest-bar { flex-direction: column; } .toolbar { flex-direction: column; } .search-input { min-width: 100%; } }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .card { animation: fadeInUp 0.3s ease-out both; }
+  .card:nth-child(2) { animation-delay: 0.05s; }
+  .card:nth-child(3) { animation-delay: 0.1s; }
+  .card:nth-child(4) { animation-delay: 0.15s; }
+  .card:nth-child(5) { animation-delay: 0.2s; }
+  .card:nth-child(6) { animation-delay: 0.25s; }
+  .bulk-section { margin-top: 12px; }
+  .bulk-toggle { font-size: 13px; color: var(--text-dim); cursor: pointer; background: none; border: none; font-family: 'DM Sans', sans-serif; transition: color 0.15s; }
+  .bulk-toggle:hover { color: var(--accent); }
+  .bulk-area { display: none; margin-top: 10px; }
+  .bulk-area.show { display: block; }
+  .bulk-textarea { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; color: var(--text); font-size: 13px; font-family: 'Space Mono', monospace; outline: none; resize: vertical; min-height: 120px; line-height: 1.8; transition: border-color 0.2s; }
+  .bulk-textarea:focus { border-color: var(--accent); }
+  .bulk-btn { margin-top: 10px; background: var(--surface); border: 1px solid var(--accent); color: var(--accent); border-radius: 8px; padding: 10px 20px; font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.2s; }
+  .bulk-btn:hover { background: var(--accent-glow); }
+  .bulk-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .bulk-progress { margin-top: 10px; font-size: 13px; color: var(--text-muted); font-family: 'Space Mono', monospace; }
+</style>
+</head>
+<body>
+<div id="authOverlay" class="auth-overlay">
+  <div class="auth-modal">
+    <h2>dopo</h2>
+    <p>Your unified content library</p>
+    <div id="authForm">
+      <input id="authEmail" class="auth-field" type="email" placeholder="Email" />
+      <input id="authPassword" class="auth-field" type="password" placeholder="Password" />
+      <button id="authSubmit" class="auth-submit" onclick="handleAuth()">Sign In</button>
+      <div id="authToggle" class="auth-toggle">Don't have an account? <a onclick="toggleAuthMode()">Sign up</a></div>
+      <div id="authError" class="auth-error"></div>
+    </div>
+  </div>
+</div>
+<div class="app" id="app" style="display: none;">
+  <header class="header">
+    <div><div class="logo">dopo</div><div class="logo-sub">content library</div></div>
+    <div><span id="userBadge" class="user-badge"></span></div>
+  </header>
+  <div class="ingest-section">
+    <div class="ingest-bar">
+      <input id="ingestInput" class="ingest-input" type="url" placeholder="Paste a URL from YouTube, Instagram, TikTok..." onkeydown="if(event.key==='Enter')handleIngest()" />
+      <button id="ingestBtn" class="ingest-btn" onclick="handleIngest()"><span id="ingestBtnText">Save</span></button>
+    </div>
+    <div id="ingestStatus" class="ingest-status"></div>
+    <div class="bulk-section">
+      <button class="bulk-toggle" onclick="toggleBulk()">+ Bulk import (paste multiple URLs)</button>
+      <div id="bulkArea" class="bulk-area">
+        <textarea id="bulkTextarea" class="bulk-textarea" placeholder="Paste one URL per line..."></textarea>
+        <button id="bulkBtn" class="bulk-btn" onclick="handleBulkIngest()">Import All</button>
+        <div id="bulkProgress" class="bulk-progress"></div>
+      </div>
+    </div>
+  </div>
+  <div class="toolbar">
+    <input id="searchInput" class="search-input" type="text" placeholder="Search your library..." oninput="debounceSearch()" />
+    <button class="filter-btn" data-filter="all" onclick="setFilter('all', this)">All</button>
+    <button class="filter-btn" data-filter="youtube" onclick="setFilter('youtube', this)">YouTube</button>
+    <button class="filter-btn" data-filter="instagram" onclick="setFilter('instagram', this)">Instagram</button>
+    <button class="filter-btn" data-filter="tiktok" onclick="setFilter('tiktok', this)">TikTok</button>
+  </div>
+  <div id="statsBar" class="stats-bar"></div>
+  <div id="cardsGrid" class="cards-grid"></div>
+  <div id="emptyState" class="empty-state" style="display: none;">
+    <div class="empty-state-icon">📌</div>
+    <h3>No saves yet</h3>
+    <p>Paste a URL above to start building your content library. Dopo extracts metadata automatically from YouTube, Instagram, TikTok, and more.</p>
+  </div>
+</div>
+<script>
+const SUPABASE_URL = "https://adyqktvkxwohzxzjqpjt.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFkeXFrdHZreHdvaHp4empxcGp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MDY1OTcsImV4cCI6MjA4NjQ4MjU5N30.H5V7HHpIl5o5steAc760Lm1SqjmAYnWiBNrTlrmQHiI";
+let accessToken = null;
+let currentUser = null;
+let currentFilter = "all";
+let searchTimeout = null;
+let isSignUp = false;
+
+function toggleAuthMode() {
+  isSignUp = !isSignUp;
+  document.getElementById("authSubmit").textContent = isSignUp ? "Sign Up" : "Sign In";
+  document.getElementById("authToggle").innerHTML = isSignUp
+    ? 'Already have an account? <a onclick="toggleAuthMode()">Sign in</a>'
+    : 'Don\'t have an account? <a onclick="toggleAuthMode()">Sign up</a>';
+  document.getElementById("authError").className = "auth-error";
+}
+
+async function handleAuth() {
+  const email = document.getElementById("authEmail").value.trim();
+  const password = document.getElementById("authPassword").value;
+  const errorEl = document.getElementById("authError");
+  if (!email || !password) { errorEl.textContent = "Please enter email and password"; errorEl.className = "auth-error show"; return; }
+  const endpoint = isSignUp ? "signup" : "token?grant_type=password";
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/auth/v1/${endpoint}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await resp.json();
+    if (!resp.ok) { errorEl.textContent = data.error_description || data.msg || data.error || "Auth failed"; errorEl.className = "auth-error show"; return; }
+    if (isSignUp && !data.access_token) {
+      errorEl.textContent = "Account created! Check your email to confirm, then sign in.";
+      errorEl.className = "auth-error show"; errorEl.style.color = "var(--success)";
+      isSignUp = false; document.getElementById("authSubmit").textContent = "Sign In"; return;
+    }
+    accessToken = data.access_token;
+    currentUser = data.user;
+    localStorage.setItem("dopo_token", accessToken);
+    showApp();
+  } catch (e) { errorEl.textContent = "Network error. Try again."; errorEl.className = "auth-error show"; }
+}
+
+async function checkExistingSession() {
+  const token = localStorage.getItem("dopo_token");
+  if (!token) return false;
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: { Authorization: `Bearer ${token}`, apikey: SUPABASE_ANON_KEY } });
+    if (resp.ok) { const user = await resp.json(); accessToken = token; currentUser = user; return true; }
+  } catch {}
+  localStorage.removeItem("dopo_token");
+  return false;
+}
+
+function showApp() {
+  document.getElementById("authOverlay").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  document.getElementById("userBadge").textContent = currentUser?.email || "";
+  loadLibrary();
+}
+
+async function handleIngest() {
+  const input = document.getElementById("ingestInput");
+  const url = input.value.trim();
+  if (!url) return;
+  const btn = document.getElementById("ingestBtn");
+  const statusEl = document.getElementById("ingestStatus");
+  btn.disabled = true;
+  document.getElementById("ingestBtnText").innerHTML = '<span class="spinner"></span>';
+  statusEl.className = "ingest-status show loading";
+  statusEl.textContent = "Saving and extracting metadata...";
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/ingest`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}`, apikey: SUPABASE_ANON_KEY },
+      body: JSON.stringify({ url }),
+    });
+    const data = await resp.json();
+    if (!resp.ok) {
+      statusEl.className = "ingest-status show error";
+      statusEl.textContent = data.error === "Already saved" ? "Already in your library!" : `Error: ${data.error}`;
+    } else {
+      statusEl.className = "ingest-status show success";
+      const s = data.save;
+      statusEl.textContent = `Saved! ${s.platform} ${s.content_type} - "${(s.title || "untitled").substring(0, 60)}" by ${s.creator_name || "unknown"}`;
+      input.value = "";
+      loadLibrary();
+    }
+  } catch (e) { statusEl.className = "ingest-status show error"; statusEl.textContent = `Network error: ${e.message}`; }
+  btn.disabled = false;
+  document.getElementById("ingestBtnText").textContent = "Save";
+  setTimeout(() => { statusEl.className = "ingest-status"; }, 5000);
+}
+
+function toggleBulk() { document.getElementById("bulkArea").classList.toggle("show"); }
+
+async function handleBulkIngest() {
+  const textarea = document.getElementById("bulkTextarea");
+  const urls = textarea.value.split("\n").map(u => u.trim()).filter(u => u.startsWith("http"));
+  if (urls.length === 0) return;
+  const btn = document.getElementById("bulkBtn");
+  const progress = document.getElementById("bulkProgress");
+  btn.disabled = true;
+  let success = 0, failed = 0, dupes = 0;
+  for (let i = 0; i < urls.length; i++) {
+    progress.textContent = `Processing ${i + 1}/${urls.length}...`;
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/ingest`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}`, apikey: SUPABASE_ANON_KEY },
+        body: JSON.stringify({ url: urls[i] }),
+      });
+      if (resp.status === 409) dupes++;
+      else if (resp.ok) success++;
+      else failed++;
+    } catch { failed++; }
+    await new Promise(r => setTimeout(r, 800));
+  }
+  progress.textContent = `Done! ${success} saved, ${dupes} duplicates, ${failed} failed`;
+  btn.disabled = false;
+  textarea.value = "";
+  loadLibrary();
+}
+
+async function loadLibrary(query = "") {
+  const grid = document.getElementById("cardsGrid");
+  const empty = document.getElementById("emptyState");
+  const stats = document.getElementById("statsBar");
+  let url = `${SUPABASE_URL}/functions/v1/library?limit=50`;
+  if (query) url += `&q=${encodeURIComponent(query)}`;
+  if (currentFilter !== "all") url += `&platform=${currentFilter}`;
+  try {
+    const resp = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}`, apikey: SUPABASE_ANON_KEY } });
+    const data = await resp.json();
+    if (!resp.ok) { grid.innerHTML = `<div style="color:var(--error);grid-column:1/-1;">Error: ${data.error}</div>`; return; }
+    const saves = data.saves || [];
+    const total = data.total || saves.length;
+    stats.textContent = query ? `${saves.length} result${saves.length !== 1 ? "s" : ""} for "${query}"` : `${total} save${total !== 1 ? "s" : ""} in library`;
+    if (saves.length === 0) {
+      grid.innerHTML = "";
+      empty.style.display = "block";
+      empty.querySelector("h3").textContent = query ? "No results" : "No saves yet";
+      empty.querySelector("p").textContent = query ? `No saves matching "${query}". Try different search terms.` : "Paste a URL above to start building your content library.";
+    } else {
+      empty.style.display = "none";
+      grid.innerHTML = saves.map(renderCard).join("");
+    }
+  } catch (e) { grid.innerHTML = `<div style="color:var(--error);grid-column:1/-1;">Failed to load: ${e.message}</div>`; }
+}
+
+function renderCard(save) {
+  const icons = { youtube: "▶", instagram: "📷", tiktok: "♪", facebook: "f", other: "🔗" };
+  const p = save.platform || "other";
+  const title = save.title || save.canonical_url || save.url;
+  const thumb = save.thumbnail_url;
+  const tags = save.tags || [];
+  const thumbHtml = thumb
+    ? `<img class="card-thumb" src="${esc(thumb)}" alt="" loading="lazy" onerror="this.outerHTML='<div class=\\'card-thumb-placeholder\\'>${icons[p]||'🔗'}</div>'" />`
+    : `<div class="card-thumb-placeholder">${icons[p] || "🔗"}</div>`;
+  const tagsHtml = tags.slice(0, 5).map(t => `<span class="card-tag">#${esc(t)}</span>`).join("");
+  const dateStr = save.saved_at ? new Date(save.saved_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
+  return `<div class="card">
+    <div class="card-enrichment ${save.enrichment_status||'pending'}" title="Enrichment: ${save.enrichment_status||'pending'}"></div>
+    ${thumbHtml}
+    <div class="card-body">
+      <div><span class="card-platform ${p}">${icons[p]||""} ${p}</span><span class="card-content-type">${save.content_type||""}</span></div>
+      <div class="card-title">${esc(title.substring(0,200))}</div>
+      ${save.creator_name ? `<div class="card-creator">${esc(save.creator_name)}${save.creator_handle ? ` <span class="card-creator-handle">${esc(save.creator_handle)}</span>` : ""}</div>` : ""}
+      ${tagsHtml ? `<div class="card-tags">${tagsHtml}</div>` : ""}
+      <div class="card-meta">
+        <span class="card-date">${dateStr}</span>
+        <div class="card-actions">
+          <button class="card-action ${save.is_favorite?'favorited':''}" onclick="toggleFav('${save.id}',${!save.is_favorite})" title="Favorite">${save.is_favorite?"★":"☆"}</button>
+          <a class="card-link" href="${esc(save.canonical_url||save.url)}" target="_blank" rel="noopener">Open ↗</a>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function esc(s) { if(!s)return""; return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+async function toggleFav(id, newState) {
+  try {
+    await fetch(`${SUPABASE_URL}/functions/v1/library`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}`, apikey: SUPABASE_ANON_KEY },
+      body: JSON.stringify({ id, is_favorite: newState }),
+    });
+    loadLibrary(document.getElementById("searchInput").value);
+  } catch {}
+}
+
+function setFilter(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  loadLibrary(document.getElementById("searchInput").value);
+}
+
+function debounceSearch() {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => { loadLibrary(document.getElementById("searchInput").value.trim()); }, 300);
+}
+
+(async function init() {
+  document.querySelector('[data-filter="all"]').classList.add("active");
+  if (await checkExistingSession()) showApp();
+})();
+</script>
+</body>
+</html>
