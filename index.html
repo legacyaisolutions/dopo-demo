@@ -19,6 +19,7 @@
     --youtube: #ff0033;
     --instagram: #e1306c;
     --tiktok: #00f2ea;
+    --facebook: #1877f2;
     --success: #34d399;
     --error: #f87171;
     --radius: 12px;
@@ -98,6 +99,7 @@
   .card-platform.youtube { color: var(--youtube); background: rgba(255,0,51,0.1); }
   .card-platform.instagram { color: var(--instagram); background: rgba(225,48,108,0.1); }
   .card-platform.tiktok { color: var(--tiktok); background: rgba(0,242,234,0.1); }
+  .card-platform.facebook { color: var(--facebook); background: rgba(24,119,242,0.1); }
   .card-platform.other { color: var(--text-muted); background: rgba(136,136,160,0.1); }
   .card-content-type { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-left: 6px; }
   .card-title { font-size: 14px; font-weight: 500; line-height: 1.4; color: var(--text); margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
@@ -177,7 +179,7 @@
   </header>
   <div class="ingest-section">
     <div class="ingest-bar">
-      <input id="ingestInput" class="ingest-input" type="url" placeholder="Paste a URL from YouTube, Instagram, TikTok..." onkeydown="if(event.key==='Enter')handleIngest()" />
+      <input id="ingestInput" class="ingest-input" type="url" placeholder="Paste a URL from YouTube, Instagram, TikTok, Facebook..." onkeydown="if(event.key==='Enter')handleIngest()" />
       <button id="ingestBtn" class="ingest-btn" onclick="handleIngest()"><span id="ingestBtnText">Save</span></button>
     </div>
     <div id="ingestStatus" class="ingest-status"></div>
@@ -196,6 +198,7 @@
     <button class="filter-btn" data-filter="youtube" onclick="setFilter('youtube', this)">YouTube</button>
     <button class="filter-btn" data-filter="instagram" onclick="setFilter('instagram', this)">Instagram</button>
     <button class="filter-btn" data-filter="tiktok" onclick="setFilter('tiktok', this)">TikTok</button>
+    <button class="filter-btn" data-filter="facebook" onclick="setFilter('facebook', this)">Facebook</button>
   </div>
   <div id="statsBar" class="stats-bar"></div>
   <div id="cardsGrid" class="cards-grid"></div>
@@ -357,7 +360,7 @@ async function loadLibrary(query = "") {
 }
 
 function renderCard(save) {
-  const icons = { youtube: "▶", instagram: "📷", tiktok: "♪", facebook: "f", other: "🔗" };
+  const icons = { youtube: "▶", instagram: "📷", tiktok: "♪", facebook: "🔵", other: "🔗" };
   const p = save.platform || "other";
   const title = save.title || save.canonical_url || save.url;
   const thumb = save.thumbnail_url;
