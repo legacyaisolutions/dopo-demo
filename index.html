@@ -19,6 +19,7 @@
     --youtube: #ff0033;
     --instagram: #e1306c;
     --tiktok: #00f2ea;
+    --twitter: #1d9bf0;
     --facebook: #1877f2;
     --success: #34d399;
     --error: #f87171;
@@ -99,6 +100,7 @@
   .card-platform.youtube { color: var(--youtube); background: rgba(255,0,51,0.1); }
   .card-platform.instagram { color: var(--instagram); background: rgba(225,48,108,0.1); }
   .card-platform.tiktok { color: var(--tiktok); background: rgba(0,242,234,0.1); }
+  .card-platform.twitter { color: var(--twitter); background: rgba(29,155,240,0.1); }
   .card-platform.facebook { color: var(--facebook); background: rgba(24,119,242,0.1); }
   .card-platform.other { color: var(--text-muted); background: rgba(136,136,160,0.1); }
   .card-content-type { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-left: 6px; }
@@ -179,7 +181,7 @@
   </header>
   <div class="ingest-section">
     <div class="ingest-bar">
-      <input id="ingestInput" class="ingest-input" type="url" placeholder="Paste a URL from YouTube, Instagram, TikTok, Facebook..." onkeydown="if(event.key==='Enter')handleIngest()" />
+      <input id="ingestInput" class="ingest-input" type="url" placeholder="Paste a URL from YouTube, Instagram, TikTok, X, Facebook..." onkeydown="if(event.key==='Enter')handleIngest()" />
       <button id="ingestBtn" class="ingest-btn" onclick="handleIngest()"><span id="ingestBtnText">Save</span></button>
     </div>
     <div id="ingestStatus" class="ingest-status"></div>
@@ -198,6 +200,7 @@
     <button class="filter-btn" data-filter="youtube" onclick="setFilter('youtube', this)">YouTube</button>
     <button class="filter-btn" data-filter="instagram" onclick="setFilter('instagram', this)">Instagram</button>
     <button class="filter-btn" data-filter="tiktok" onclick="setFilter('tiktok', this)">TikTok</button>
+    <button class="filter-btn" data-filter="twitter" onclick="setFilter('twitter', this)">X</button>
     <button class="filter-btn" data-filter="facebook" onclick="setFilter('facebook', this)">Facebook</button>
   </div>
   <div id="statsBar" class="stats-bar"></div>
@@ -205,7 +208,7 @@
   <div id="emptyState" class="empty-state" style="display: none;">
     <div class="empty-state-icon">📌</div>
     <h3>No saves yet</h3>
-    <p>Paste a URL above to start building your content library. Dopo extracts metadata automatically from YouTube, Instagram, TikTok, and more.</p>
+    <p>Paste a URL above to start building your content library. Dopo extracts metadata automatically from YouTube, Instagram, TikTok, X, Facebook, and more.</p>
   </div>
 </div>
 <script>
@@ -293,7 +296,8 @@ async function handleIngest() {
     } else {
       statusEl.className = "ingest-status show success";
       const s = data.save;
-      statusEl.textContent = `Saved! ${s.platform} ${s.content_type} - "${(s.title || "untitled").substring(0, 60)}" by ${s.creator_name || "unknown"}`;
+      const displayPlatform = s.platform === 'twitter' ? 'X' : s.platform;
+      statusEl.textContent = `Saved! ${displayPlatform} ${s.content_type} — "${(s.title || "untitled").substring(0, 60)}" by ${s.creator_name || "unknown"}`;
       input.value = "";
       loadLibrary();
     }
@@ -360,24 +364,34 @@ async function loadLibrary(query = "") {
 }
 
 function renderCard(save) {
-  const icons = { youtube: "▶", instagram: "📷", tiktok: "♪", facebook: "🔵", other: "🔗" };
+  const platformConfig = {
+    youtube:   { icon: "▶",  label: "YouTube" },
+    instagram: { icon: "📷", label: "Instagram" },
+    tiktok:    { icon: "♪",  label: "TikTok" },
+    twitter:   { icon: "𝕏",  label: "X" },
+    facebook:  { icon: "f",  label: "Facebook" },
+    other:     { icon: "🔗", label: "Other" },
+  };
   const p = save.platform || "other";
+  const config = platformConfig[p] || platformConfig.other;
   const title = save.title || save.canonical_url || save.url;
   const thumb = save.thumbnail_url;
-  const tags = save.tags || [];
+  const tags = [...(save.ai_tags || []), ...(save.tags || [])];
+  const uniqueTags = [...new Set(tags)];
   const thumbHtml = thumb
-    ? `<img class="card-thumb" src="${esc(thumb)}" alt="" loading="lazy" onerror="this.outerHTML='<div class=\\'card-thumb-placeholder\\'>${icons[p]||'🔗'}</div>'" />`
-    : `<div class="card-thumb-placeholder">${icons[p] || "🔗"}</div>`;
-  const tagsHtml = tags.slice(0, 5).map(t => `<span class="card-tag">#${esc(t)}</span>`).join("");
+    ? `<img class="card-thumb" src="${esc(thumb)}" alt="" loading="lazy" onerror="this.outerHTML='<div class=\\'card-thumb-placeholder\\'>${config.icon}</div>'" />`
+    : `<div class="card-thumb-placeholder">${config.icon}</div>`;
+  const tagsHtml = uniqueTags.slice(0, 5).map(t => `<span class="card-tag">#${esc(t)}</span>`).join("");
   const dateStr = save.saved_at ? new Date(save.saved_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
+  const categoryHtml = save.category && save.category !== 'other' ? `<span class="card-tag" style="background:var(--accent-glow);color:var(--accent);">${esc(save.category)}</span>` : "";
   return `<div class="card">
     <div class="card-enrichment ${save.enrichment_status||'pending'}" title="Enrichment: ${save.enrichment_status||'pending'}"></div>
     ${thumbHtml}
     <div class="card-body">
-      <div><span class="card-platform ${p}">${icons[p]||""} ${p}</span><span class="card-content-type">${save.content_type||""}</span></div>
+      <div><span class="card-platform ${p}">${config.icon} ${config.label}</span><span class="card-content-type">${save.content_type||""}</span></div>
       <div class="card-title">${esc(title.substring(0,200))}</div>
       ${save.creator_name ? `<div class="card-creator">${esc(save.creator_name)}${save.creator_handle ? ` <span class="card-creator-handle">${esc(save.creator_handle)}</span>` : ""}</div>` : ""}
-      ${tagsHtml ? `<div class="card-tags">${tagsHtml}</div>` : ""}
+      ${(tagsHtml || categoryHtml) ? `<div class="card-tags">${categoryHtml}${tagsHtml}</div>` : ""}
       <div class="card-meta">
         <span class="card-date">${dateStr}</span>
         <div class="card-actions">
