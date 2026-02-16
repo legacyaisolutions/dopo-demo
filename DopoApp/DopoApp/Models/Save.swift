@@ -119,7 +119,7 @@ enum PlatformTheme {
         case .youtube: return "play.rectangle.fill"
         case .instagram: return "camera.fill"
         case .tiktok: return "music.note"
-        case .twitter: return "bubble.left.fill"
+        case .twitter: return "xmark"
         case .facebook: return "person.2.fill"
         case .other: return "link"
         }
