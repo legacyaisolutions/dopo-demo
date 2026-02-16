@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 // MARK: - Collections Main View
 
@@ -664,7 +665,12 @@ struct CollectionDetailView: View {
     @State private var selectedSave: Save?
     @State private var showActionSheet = false
     @State private var actionSave: Save?
+    @State private var showShareSheet = false
     @Environment(\.dismiss) private var dismiss
+
+    private var isOwner: Bool {
+        collection.isOwner ?? true
+    }
 
     var body: some View {
         NavigationStack {
@@ -672,39 +678,78 @@ struct CollectionDetailView: View {
                 Color.dopoBg.ignoresSafeArea()
 
                 VStack(spacing: 0) {
-                    // Header
-                    VStack(spacing: 6) {
-                        Text(collection.displayEmoji)
-                            .font(.system(size: 44))
-                        if let desc = collection.description, !desc.isEmpty {
-                            Text(desc)
-                                .font(.dopoBody)
-                                .foregroundColor(.dopoTextMuted)
-                        }
-                        HStack(spacing: 12) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "bookmark.fill")
-                                    .font(.system(size: 10))
-                                Text("\(saves.count) saves")
+                    // Modern header — no folder icon
+                    VStack(spacing: 10) {
+                        // Stats row
+                        HStack(spacing: 16) {
+                            StatPill(icon: "bookmark.fill", value: "\(saves.count)", label: "saves")
+
+                            if collection.isPublic == true {
+                                StatPill(icon: "globe", value: nil, label: "Public", tint: .dopoAccent)
                             }
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.dopoTextDim)
 
                             if collection.isViewOnly {
-                                HStack(spacing: 4) {
-                                    Image(systemName: "eye")
-                                    Text("View only")
+                                StatPill(icon: "eye", value: nil, label: "View only")
+                            } else if let isOwner = collection.isOwner, !isOwner {
+                                StatPill(icon: "pencil", value: nil, label: "Editor")
+                            }
+                        }
+
+                        if let desc = collection.description, !desc.isEmpty {
+                            Text(desc)
+                                .font(.system(size: 13))
+                                .foregroundColor(.dopoTextMuted)
+                                .multilineTextAlignment(.center)
+                        }
+
+                        // Action buttons
+                        HStack(spacing: 10) {
+                            if isOwner {
+                                Button(action: {
+                                    HapticManager.impact(.medium)
+                                    showShareSheet = true
+                                }) {
+                                    HStack(spacing: 5) {
+                                        Image(systemName: "person.badge.plus")
+                                            .font(.system(size: 12))
+                                        Text("Share")
+                                            .font(.system(size: 13, weight: .semibold))
+                                    }
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 8)
+                                    .background(Color.dopoAccent)
+                                    .cornerRadius(10)
                                 }
-                                .font(.system(size: 11, weight: .medium))
-                                .foregroundColor(.dopoTextDim)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 4)
-                                .background(Color.dopoSurfaceHover)
-                                .cornerRadius(8)
+                            }
+
+                            if let shareToken = collection.shareToken, collection.isPublic == true {
+                                Button(action: {
+                                    HapticManager.notification(.success)
+                                    let shareURL = "https://adyqktvkxwohzxzjqpjt.supabase.co/functions/v1/library/shared/\(shareToken)"
+                                    UIPasteboard.general.string = shareURL
+                                }) {
+                                    HStack(spacing: 5) {
+                                        Image(systemName: "link")
+                                            .font(.system(size: 12))
+                                        Text("Copy Link")
+                                            .font(.system(size: 13, weight: .medium))
+                                    }
+                                    .foregroundColor(.dopoAccent)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 8)
+                                    .background(Color.dopoAccentGlow)
+                                    .cornerRadius(10)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .stroke(Color.dopoAccent.opacity(0.3), lineWidth: 1)
+                                    )
+                                }
                             }
                         }
                     }
-                    .padding(.vertical, 16)
+                    .padding(.vertical, 14)
+                    .padding(.horizontal, 16)
 
                     Divider().background(Color.dopoBorder)
 
@@ -718,13 +763,17 @@ struct CollectionDetailView: View {
                         }
                     } else if saves.isEmpty {
                         Spacer()
-                        VStack(spacing: 8) {
-                            Image(systemName: "tray")
-                                .font(.system(size: 28))
+                        VStack(spacing: 10) {
+                            Image(systemName: "photo.on.rectangle.angled")
+                                .font(.system(size: 32))
+                                .foregroundColor(.dopoTextDim.opacity(0.5))
+                            Text("No saves yet")
+                                .font(.system(size: 15, weight: .medium))
                                 .foregroundColor(.dopoTextDim)
-                            Text("No saves in this collection yet")
-                                .foregroundColor(.dopoTextDim)
-                                .font(.dopoBody)
+                            Text("Add saves from your library to\nstart building this collection.")
+                                .font(.system(size: 13))
+                                .foregroundColor(.dopoTextDim.opacity(0.7))
+                                .multilineTextAlignment(.center)
                         }
                         Spacer()
                     } else {
@@ -759,6 +808,9 @@ struct CollectionDetailView: View {
             }
             .sheet(item: $selectedSave) { save in
                 SaveDetailView(save: save)
+            }
+            .sheet(isPresented: $showShareSheet) {
+                ShareCollectionView(collection: collection)
             }
             .confirmationDialog(
                 "What would you like to do?",
@@ -809,7 +861,6 @@ struct CollectionDetailView: View {
         try? await APIClient.shared.toggleFavorite(token: token, saveId: save.id, isFavorite: newState)
     }
 
-    /// Removes the save from THIS collection only — save stays in the library
     private func removeFromCollection(_ save: Save) async {
         withAnimation { saves.removeAll { $0.id == save.id } }
         HapticManager.notification(.success)
@@ -819,11 +870,396 @@ struct CollectionDetailView: View {
         )
     }
 
-    /// Permanently deletes the save from the entire library (and all collections)
     private func deleteFromLibrary(_ save: Save) async {
         withAnimation { saves.removeAll { $0.id == save.id } }
         HapticManager.notification(.warning)
         guard let token = authManager.accessToken else { return }
         try? await APIClient.shared.deleteSave(token: token, saveId: save.id)
+    }
+}
+
+// MARK: - Stat Pill
+
+struct StatPill: View {
+    let icon: String
+    let value: String?
+    let label: String
+    var tint: Color = .dopoTextDim
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.system(size: 10))
+            if let value {
+                Text(value)
+                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+            }
+            Text(label)
+                .font(.system(size: 11, weight: .medium))
+        }
+        .foregroundColor(tint)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
+        .background(tint.opacity(0.1))
+        .cornerRadius(8)
+    }
+}
+
+// MARK: - Share Collection Sheet
+
+struct ShareCollectionView: View {
+    @EnvironmentObject var authManager: AuthManager
+    let collection: DopoCollection
+    @Environment(\.dismiss) private var dismiss
+    @State private var isPublic: Bool
+    @State private var shareToken: String?
+    @State private var collaborators: [Collaborator] = []
+    @State private var isLoadingCollabs = true
+    @State private var inviteEmail = ""
+    @State private var inviteRole = "viewer"
+    @State private var isInviting = false
+    @State private var toastMessage: String?
+
+    init(collection: DopoCollection) {
+        self.collection = collection
+        _isPublic = State(initialValue: collection.isPublic ?? false)
+        _shareToken = State(initialValue: collection.shareToken)
+    }
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color.dopoBg.ignoresSafeArea()
+
+                ScrollView {
+                    VStack(spacing: 24) {
+                        // Public link toggle
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("PUBLIC LINK")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundColor(.dopoTextDim)
+                                .tracking(1.5)
+
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Anyone with the link")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundColor(.dopoText)
+                                    Text(isPublic ? "Can view this collection" : "Link sharing is off")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(.dopoTextDim)
+                                }
+
+                                Spacer()
+
+                                Toggle("", isOn: $isPublic)
+                                    .labelsHidden()
+                                    .tint(.dopoAccent)
+                                    .onChange(of: isPublic) { _ in
+                                        Task { await toggleShare() }
+                                    }
+                            }
+                            .padding(14)
+                            .background(Color.dopoSurface)
+                            .cornerRadius(12)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.dopoBorder, lineWidth: 1)
+                            )
+
+                            if isPublic, let token = shareToken {
+                                Button(action: {
+                                    HapticManager.notification(.success)
+                                    let url = "https://adyqktvkxwohzxzjqpjt.supabase.co/functions/v1/library/shared/\(token)"
+                                    UIPasteboard.general.string = url
+                                    toastMessage = "Link copied!"
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                        toastMessage = nil
+                                    }
+                                }) {
+                                    HStack {
+                                        Image(systemName: "link")
+                                        Text("Copy share link")
+                                            .font(.system(size: 13, weight: .medium))
+                                        Spacer()
+                                        Image(systemName: "doc.on.doc")
+                                            .font(.system(size: 12))
+                                    }
+                                    .foregroundColor(.dopoAccent)
+                                    .padding(12)
+                                    .background(Color.dopoAccentGlow)
+                                    .cornerRadius(10)
+                                }
+                            }
+                        }
+
+                        // Invite collaborator
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("INVITE PEOPLE")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundColor(.dopoTextDim)
+                                .tracking(1.5)
+
+                            HStack(spacing: 8) {
+                                TextField("Email address", text: $inviteEmail)
+                                    .textFieldStyle(DopoTextFieldStyle())
+                                    .textInputAutocapitalization(.never)
+                                    .autocorrectionDisabled(true)
+                                    .keyboardType(.emailAddress)
+
+                                Menu {
+                                    Button(action: { inviteRole = "viewer" }) {
+                                        Label("Viewer", systemImage: "eye")
+                                    }
+                                    Button(action: { inviteRole = "editor" }) {
+                                        Label("Editor", systemImage: "pencil")
+                                    }
+                                } label: {
+                                    HStack(spacing: 4) {
+                                        Image(systemName: inviteRole == "editor" ? "pencil" : "eye")
+                                            .font(.system(size: 11))
+                                        Text(inviteRole == "editor" ? "Editor" : "Viewer")
+                                            .font(.system(size: 12, weight: .medium))
+                                        Image(systemName: "chevron.down")
+                                            .font(.system(size: 9))
+                                    }
+                                    .foregroundColor(.dopoTextMuted)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 10)
+                                    .background(Color.dopoSurface)
+                                    .cornerRadius(10)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .stroke(Color.dopoBorder, lineWidth: 1)
+                                    )
+                                }
+                            }
+
+                            Button(action: {
+                                HapticManager.impact(.medium)
+                                Task { await sendInvite() }
+                            }) {
+                                HStack(spacing: 6) {
+                                    if isInviting {
+                                        ProgressView().tint(.white)
+                                    } else {
+                                        Image(systemName: "paperplane.fill")
+                                            .font(.system(size: 12))
+                                    }
+                                    Text("Send Invite")
+                                        .font(.system(size: 14, weight: .semibold))
+                                }
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 12)
+                                .background(inviteEmail.isEmpty ? Color.dopoTextDim : Color.dopoAccent)
+                                .cornerRadius(10)
+                            }
+                            .disabled(inviteEmail.isEmpty || isInviting)
+                        }
+
+                        // Current collaborators
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack {
+                                Text("COLLABORATORS")
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundColor(.dopoTextDim)
+                                    .tracking(1.5)
+
+                                Spacer()
+
+                                if !collaborators.isEmpty {
+                                    Text("\(collaborators.count)")
+                                        .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                                        .foregroundColor(.dopoTextDim)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 3)
+                                        .background(Color.dopoSurfaceHover)
+                                        .cornerRadius(6)
+                                }
+                            }
+
+                            if isLoadingCollabs {
+                                HStack {
+                                    Spacer()
+                                    ProgressView().tint(.dopoTextDim)
+                                    Spacer()
+                                }
+                                .padding(.vertical, 20)
+                            } else if collaborators.isEmpty {
+                                HStack {
+                                    Image(systemName: "person.2.slash")
+                                        .foregroundColor(.dopoTextDim.opacity(0.5))
+                                    Text("No collaborators yet")
+                                        .font(.system(size: 13))
+                                        .foregroundColor(.dopoTextDim)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 20)
+                            } else {
+                                VStack(spacing: 0) {
+                                    ForEach(collaborators) { collab in
+                                        CollaboratorRow(
+                                            collaborator: collab,
+                                            onRemove: {
+                                                Task { await removeCollab(collab) }
+                                            }
+                                        )
+                                        if collab.id != collaborators.last?.id {
+                                            Divider().background(Color.dopoBorder)
+                                        }
+                                    }
+                                }
+                                .background(Color.dopoSurface)
+                                .cornerRadius(12)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.dopoBorder, lineWidth: 1)
+                                )
+                            }
+                        }
+                    }
+                    .padding(16)
+                }
+
+                // Toast overlay
+                if let toast = toastMessage {
+                    VStack {
+                        Spacer()
+                        Text(toast)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            .background(Color.dopoSuccess)
+                            .cornerRadius(20)
+                            .shadow(color: .black.opacity(0.3), radius: 8, y: 4)
+                            .padding(.bottom, 30)
+                    }
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .animation(.spring(), value: toastMessage)
+                }
+            }
+            .navigationTitle("Share")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                        .foregroundColor(.dopoAccent)
+                }
+            }
+            .task { await loadCollaborators() }
+        }
+    }
+
+    private func toggleShare() async {
+        guard let token = authManager.accessToken else { return }
+        do {
+            let updated = try await APIClient.shared.toggleCollectionShare(token: token, collectionId: collection.id)
+            withAnimation {
+                isPublic = updated.isPublic ?? false
+                shareToken = updated.shareToken
+            }
+            HapticManager.notification(isPublic ? .success : .warning)
+        } catch {
+            withAnimation { isPublic.toggle() } // revert on failure
+        }
+    }
+
+    private func sendInvite() async {
+        guard let token = authManager.accessToken else { return }
+        isInviting = true
+        do {
+            try await APIClient.shared.inviteCollaborator(
+                token: token, collectionId: collection.id, email: inviteEmail, role: inviteRole
+            )
+            HapticManager.notification(.success)
+            toastMessage = "Invite sent to \(inviteEmail)"
+            inviteEmail = ""
+            await loadCollaborators()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { toastMessage = nil }
+        } catch {
+            HapticManager.notification(.error)
+            toastMessage = "Failed to send invite"
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { toastMessage = nil }
+        }
+        isInviting = false
+    }
+
+    private func loadCollaborators() async {
+        guard let token = authManager.accessToken else {
+            isLoadingCollabs = false
+            return
+        }
+        do {
+            let response = try await APIClient.shared.fetchCollaborators(token: token, collectionId: collection.id)
+            withAnimation {
+                collaborators = response.collaborators
+                isLoadingCollabs = false
+            }
+        } catch {
+            isLoadingCollabs = false
+        }
+    }
+
+    private func removeCollab(_ collab: Collaborator) async {
+        guard let token = authManager.accessToken else { return }
+        withAnimation { collaborators.removeAll { $0.id == collab.id } }
+        HapticManager.notification(.success)
+        try? await APIClient.shared.removeCollaborator(token: token, collaboratorId: collab.id)
+    }
+}
+
+// MARK: - Collaborator Row
+
+struct CollaboratorRow: View {
+    let collaborator: Collaborator
+    let onRemove: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            // Avatar
+            ZStack {
+                Circle()
+                    .fill(Color.dopoSurfaceHover)
+                    .frame(width: 36, height: 36)
+                Text(String(collaborator.displayEmail.prefix(1)).uppercased())
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(.dopoTextMuted)
+            }
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(collaborator.displayEmail)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.dopoText)
+                    .lineLimit(1)
+
+                HStack(spacing: 6) {
+                    Text(collaborator.role.capitalized)
+                        .font(.system(size: 11))
+                        .foregroundColor(.dopoTextDim)
+
+                    if !collaborator.accepted {
+                        Text("Pending")
+                            .font(.system(size: 9, weight: .semibold))
+                            .foregroundColor(.dopoAccent)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.dopoAccentGlow)
+                            .cornerRadius(4)
+                    }
+                }
+            }
+
+            Spacer()
+
+            Button(action: onRemove) {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 18))
+                    .foregroundColor(.dopoTextDim)
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
     }
 }

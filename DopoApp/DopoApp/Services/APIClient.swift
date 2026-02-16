@@ -172,4 +172,53 @@ class APIClient {
         request.httpBody = try JSONEncoder().encode(body)
         let _ = try await performRequest(request)
     }
+
+    // MARK: - Collection Sharing
+
+    func toggleCollectionShare(token: String, collectionId: String) async throws -> DopoCollection {
+        var request = URLRequest(url: URL(string: "\(DopoConfig.libraryURL)/collections")!)
+        request.httpMethod = "POST"
+        request.allHTTPHeaderFields = authHeaders(token)
+        let body: [String: String] = ["action": "toggle_share", "collection_id": collectionId]
+        request.httpBody = try JSONEncoder().encode(body)
+        let (data, _) = try await performRequest(request)
+        do {
+            return try JSONDecoder().decode(DopoCollection.self, from: data)
+        } catch {
+            throw APIError.decodingError(error)
+        }
+    }
+
+    // MARK: - Collaborators
+
+    func fetchCollaborators(token: String, collectionId: String) async throws -> CollaboratorsResponse {
+        var components = URLComponents(string: "\(DopoConfig.libraryURL)/collaborators")!
+        components.queryItems = [URLQueryItem(name: "collection_id", value: collectionId)]
+        var request = URLRequest(url: components.url!)
+        request.allHTTPHeaderFields = authHeaders(token)
+        let (data, _) = try await performRequest(request)
+        do {
+            return try JSONDecoder().decode(CollaboratorsResponse.self, from: data)
+        } catch {
+            throw APIError.decodingError(error)
+        }
+    }
+
+    func inviteCollaborator(token: String, collectionId: String, email: String, role: String) async throws {
+        var request = URLRequest(url: URL(string: "\(DopoConfig.libraryURL)/collaborators")!)
+        request.httpMethod = "POST"
+        request.allHTTPHeaderFields = authHeaders(token)
+        let body: [String: String] = ["collection_id": collectionId, "email": email, "role": role]
+        request.httpBody = try JSONEncoder().encode(body)
+        let _ = try await performRequest(request)
+    }
+
+    func removeCollaborator(token: String, collaboratorId: String) async throws {
+        var components = URLComponents(string: "\(DopoConfig.libraryURL)/collaborators")!
+        components.queryItems = [URLQueryItem(name: "id", value: collaboratorId)]
+        var request = URLRequest(url: components.url!)
+        request.httpMethod = "DELETE"
+        request.allHTTPHeaderFields = authHeaders(token)
+        let _ = try await performRequest(request)
+    }
 }
