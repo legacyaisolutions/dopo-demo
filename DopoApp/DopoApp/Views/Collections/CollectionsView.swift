@@ -1,5 +1,7 @@
 import SwiftUI
 
+// MARK: - Collections Main View
+
 struct CollectionsView: View {
     @EnvironmentObject var authManager: AuthManager
     @State private var collections: [DopoCollection] = []
@@ -14,68 +16,54 @@ struct CollectionsView: View {
                 Color.dopoBg.ignoresSafeArea()
 
                 if isLoading {
-                    ProgressView()
-                        .tint(.dopoAccent)
+                    CollectionsSkeletonView()
                 } else if let errorMessage {
                     ErrorBanner(message: errorMessage) {
                         Task { await loadCollections() }
                     }
                 } else if collections.isEmpty {
-                    VStack(spacing: 16) {
-                        ZStack {
-                            Circle()
-                                .fill(Color.dopoAccent.opacity(0.1))
-                                .frame(width: 80, height: 80)
-                            Image(systemName: "folder.fill.badge.plus")
-                                .font(.system(size: 32))
-                                .foregroundColor(.dopoAccent)
-                        }
-                        Text("No collections yet")
-                            .font(.dopoHeading)
-                            .foregroundColor(.dopoText)
-                        Text("Create a collection to organize\nyour saves by theme or topic.")
-                            .font(.dopoBody)
-                            .foregroundColor(.dopoTextDim)
-                            .multilineTextAlignment(.center)
-                        Button(action: {
-                            HapticManager.impact(.medium)
-                            showCreateSheet = true
-                        }) {
-                            HStack(spacing: 6) {
-                                Image(systemName: "plus")
-                                Text("New Collection")
-                            }
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 24)
-                            .padding(.vertical, 12)
-                            .background(Color.dopoAccent)
-                            .cornerRadius(12)
-                        }
-                        .padding(.top, 8)
+                    EmptyCollectionsView {
+                        HapticManager.impact(.medium)
+                        showCreateSheet = true
                     }
                 } else {
                     ScrollView {
-                        VStack(spacing: 16) {
-                            let owned = collections.filter { $0.isOwner == true }
+                        VStack(spacing: 20) {
+                            // "All Saves" hero card at top
+                            AllSavesCard()
+                                .onTapGesture {
+                                    HapticManager.impact(.light)
+                                    // Could navigate to full library
+                                }
+
+                            let owned = collections.filter { $0.isOwner != false }
+                            let shared = collections.filter { $0.isOwner == false }
+
                             if !owned.isEmpty {
-                                CollectionSection(title: "My Collections", collections: owned) { coll in
+                                CollectionSection(
+                                    title: "My Collections",
+                                    collections: owned,
+                                    token: authManager.accessToken
+                                ) { coll in
                                     HapticManager.impact(.light)
                                     selectedCollection = coll
                                 }
                             }
 
-                            let shared = collections.filter { $0.isOwner == false }
                             if !shared.isEmpty {
-                                CollectionSection(title: "Shared With Me", collections: shared) { coll in
+                                CollectionSection(
+                                    title: "Shared With Me",
+                                    collections: shared,
+                                    token: authManager.accessToken
+                                ) { coll in
                                     HapticManager.impact(.light)
                                     selectedCollection = coll
                                 }
                             }
                         }
                         .padding(.horizontal, 16)
-                        .padding(.top, 12)
-                        .padding(.bottom, 24)
+                        .padding(.top, 8)
+                        .padding(.bottom, 32)
                     }
                 }
             }
@@ -87,6 +75,7 @@ struct CollectionsView: View {
                         showCreateSheet = true
                     }) {
                         Image(systemName: "plus")
+                            .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.dopoAccent)
                     }
                 }
@@ -108,7 +97,7 @@ struct CollectionsView: View {
         guard let token = authManager.accessToken else { return }
         do {
             let response = try await APIClient.shared.fetchCollections(token: token)
-            withAnimation {
+            withAnimation(.easeInOut(duration: 0.3)) {
                 collections = response.collections
                 errorMessage = nil
                 isLoading = false
@@ -124,24 +113,95 @@ struct CollectionsView: View {
     }
 }
 
+// MARK: - All Saves Hero Card
+
+struct AllSavesCard: View {
+    var body: some View {
+        ZStack(alignment: .bottomLeading) {
+            LinearGradient(
+                colors: [
+                    Color.dopoAccent.opacity(0.3),
+                    Color.dopoAccent.opacity(0.05)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+
+            // Decorative grid dots
+            VStack(spacing: 12) {
+                ForEach(0..<3, id: \.self) { row in
+                    HStack(spacing: 12) {
+                        ForEach(0..<6, id: \.self) { col in
+                            Circle()
+                                .fill(Color.dopoAccent.opacity(Double.random(in: 0.05...0.2)))
+                                .frame(width: 6, height: 6)
+                        }
+                    }
+                }
+            }
+            .padding(20)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Image(systemName: "square.grid.2x2.fill")
+                    .font(.system(size: 20))
+                    .foregroundColor(.dopoAccent)
+                    .padding(.bottom, 4)
+                Text("All Saves")
+                    .font(.system(size: 17, weight: .bold))
+                    .foregroundColor(.dopoText)
+                Text("Your entire library")
+                    .font(.system(size: 12))
+                    .foregroundColor(.dopoTextMuted)
+            }
+            .padding(16)
+        }
+        .frame(height: 100)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.dopoAccent.opacity(0.2), lineWidth: 1)
+        )
+    }
+}
+
 // MARK: - Collection Section
 
 struct CollectionSection: View {
     let title: String
     let collections: [DopoCollection]
+    let token: String?
     let onTap: (DopoCollection) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(title.uppercased())
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundColor(.dopoTextDim)
-                .tracking(1)
-                .padding(.leading, 4)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text(title.uppercased())
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundColor(.dopoTextDim)
+                    .tracking(1.5)
 
-            LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
+                Spacer()
+
+                Text("\(collections.count)")
+                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                    .foregroundColor(.dopoTextDim)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(Color.dopoSurfaceHover)
+                    .cornerRadius(6)
+            }
+            .padding(.horizontal, 4)
+
+            LazyVGrid(
+                columns: [
+                    GridItem(.flexible(), spacing: 10),
+                    GridItem(.flexible(), spacing: 10)
+                ],
+                spacing: 10
+            ) {
                 ForEach(collections) { coll in
-                    CollectionCard(collection: coll)
+                    InstaCollectionCard(collection: coll, token: token)
                         .onTapGesture { onTap(coll) }
                 }
             }
@@ -149,115 +209,364 @@ struct CollectionSection: View {
     }
 }
 
-// MARK: - Collection Card (visual upgrade)
+// MARK: - Instagram-Style Collection Card
 
-struct CollectionCard: View {
+struct InstaCollectionCard: View {
     let collection: DopoCollection
+    let token: String?
+    @State private var thumbnails: [String] = []
+    @State private var hasLoaded = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Text(collection.displayEmoji)
-                    .font(.system(size: 32))
+        VStack(alignment: .leading, spacing: 0) {
+            // Mosaic thumbnail area
+            GeometryReader { geo in
+                let size = geo.size.width
 
-                Spacer()
+                ZStack {
+                    // Base gradient per-collection for visual variety
+                    collectionGradient
+                        .frame(width: size, height: size)
 
-                // Badges
-                VStack(alignment: .trailing, spacing: 4) {
-                    if collection.isPublic == true {
-                        HStack(spacing: 3) {
-                            Image(systemName: "link")
-                                .font(.system(size: 8))
-                            Text("Public")
-                                .font(.system(size: 9, weight: .medium))
+                    if thumbnails.count >= 4 {
+                        // 2x2 mosaic
+                        mosaicGrid(size: size, urls: Array(thumbnails.prefix(4)))
+                    } else if thumbnails.count >= 2 {
+                        // 1 big + 2 small
+                        splitLayout(size: size, urls: thumbnails)
+                    } else if thumbnails.count == 1 {
+                        // Single large thumbnail
+                        AsyncImage(url: URL(string: thumbnails[0])) { phase in
+                            if case .success(let image) = phase {
+                                image.resizable().aspectRatio(contentMode: .fill)
+                            }
                         }
-                        .foregroundColor(.dopoAccent)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 3)
-                        .background(Color.dopoAccentGlow)
-                        .cornerRadius(4)
+                        .frame(width: size, height: size)
+                        .clipped()
+                    } else if !hasLoaded {
+                        // Loading shimmer
+                        ShimmerView()
+                            .frame(width: size, height: size)
+                    } else {
+                        // Empty — show stylized placeholder
+                        emptyPlaceholder(size: size)
                     }
 
-                    if let isOwner = collection.isOwner, !isOwner {
-                        HStack(spacing: 3) {
-                            Image(systemName: collection.role == "editor" ? "pencil" : "eye")
-                                .font(.system(size: 8))
-                            Text(collection.role == "editor" ? "Editor" : "Viewer")
-                                .font(.system(size: 9, weight: .medium))
-                        }
-                        .foregroundColor(.dopoTextDim)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 3)
-                        .background(Color.dopoSurfaceHover)
-                        .cornerRadius(4)
+                    // Dark gradient overlay for text legibility
+                    VStack {
+                        Spacer()
+                        LinearGradient(
+                            colors: [.clear, .clear, Color.black.opacity(0.75)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                        .frame(height: size * 0.55)
                     }
+
+                    // Collection name overlay
+                    VStack(alignment: .leading, spacing: 2) {
+                        Spacer()
+
+                        Text(collection.name)
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(.white)
+                            .lineLimit(2)
+                            .shadow(color: .black.opacity(0.5), radius: 2, x: 0, y: 1)
+
+                        HStack(spacing: 6) {
+                            Text("\(collection.saveCount ?? 0) saves")
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundColor(.white.opacity(0.8))
+
+                            if collection.isPublic == true {
+                                HStack(spacing: 2) {
+                                    Image(systemName: "globe")
+                                        .font(.system(size: 8))
+                                    Text("Public")
+                                        .font(.system(size: 9, weight: .medium))
+                                }
+                                .foregroundColor(.dopoAccent)
+                                .padding(.horizontal, 5)
+                                .padding(.vertical, 2)
+                                .background(Color.black.opacity(0.5))
+                                .cornerRadius(4)
+                            }
+
+                            if let isOwner = collection.isOwner, !isOwner {
+                                HStack(spacing: 2) {
+                                    Image(systemName: "person.2.fill")
+                                        .font(.system(size: 8))
+                                    Text("Shared")
+                                        .font(.system(size: 9, weight: .medium))
+                                }
+                                .foregroundColor(.white.opacity(0.7))
+                                .padding(.horizontal, 5)
+                                .padding(.vertical, 2)
+                                .background(Color.white.opacity(0.15))
+                                .cornerRadius(4)
+                            }
+                        }
+                    }
+                    .padding(10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .frame(width: size, height: size)
+            }
+            .aspectRatio(1, contentMode: .fit)
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(Color.dopoBorder.opacity(0.6), lineWidth: 0.5)
+            )
+        }
+        .task {
+            await loadThumbnails()
+        }
+    }
+
+    // MARK: - Mosaic Layouts
+
+    private func mosaicGrid(size: CGFloat, urls: [String]) -> some View {
+        let gap: CGFloat = 1.5
+        let half = (size - gap) / 2
+
+        return ZStack {
+            VStack(spacing: gap) {
+                HStack(spacing: gap) {
+                    thumbnailImage(urls[0]).frame(width: half, height: half).clipped()
+                    thumbnailImage(urls[1]).frame(width: half, height: half).clipped()
+                }
+                HStack(spacing: gap) {
+                    thumbnailImage(urls[2]).frame(width: half, height: half).clipped()
+                    thumbnailImage(urls[3]).frame(width: half, height: half).clipped()
                 }
             }
+        }
+    }
 
-            VStack(alignment: .leading, spacing: 3) {
-                Text(collection.name)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(.dopoText)
-                    .lineLimit(1)
+    private func splitLayout(size: CGFloat, urls: [String]) -> some View {
+        let gap: CGFloat = 1.5
+        let bigWidth = size * 0.65
+        let smallWidth = size - bigWidth - gap
+        let halfHeight = (size - gap) / 2
 
-                Text("\(collection.saveCount ?? 0) saves")
-                    .font(.system(size: 12))
-                    .foregroundColor(.dopoTextDim)
+        return HStack(spacing: gap) {
+            thumbnailImage(urls[0])
+                .frame(width: bigWidth, height: size)
+                .clipped()
+
+            VStack(spacing: gap) {
+                if urls.count > 1 {
+                    thumbnailImage(urls[1])
+                        .frame(width: smallWidth, height: halfHeight)
+                        .clipped()
+                }
+                if urls.count > 2 {
+                    thumbnailImage(urls[2])
+                        .frame(width: smallWidth, height: halfHeight)
+                        .clipped()
+                } else {
+                    Rectangle()
+                        .fill(Color.dopoSurfaceHover)
+                        .frame(width: smallWidth, height: halfHeight)
+                }
             }
         }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.dopoSurface)
-        .cornerRadius(14)
-        .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(Color.dopoBorder, lineWidth: 1)
+    }
+
+    private func thumbnailImage(_ urlString: String) -> some View {
+        AsyncImage(url: URL(string: urlString)) { phase in
+            switch phase {
+            case .success(let image):
+                image
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+            case .failure:
+                Rectangle().fill(Color.dopoSurfaceHover)
+            case .empty:
+                Rectangle().fill(Color.dopoSurface)
+            @unknown default:
+                Rectangle().fill(Color.dopoSurface)
+            }
+        }
+    }
+
+    private func emptyPlaceholder(size: CGFloat) -> some View {
+        VStack(spacing: 8) {
+            Image(systemName: "photo.on.rectangle.angled")
+                .font(.system(size: 28))
+                .foregroundColor(.dopoTextDim.opacity(0.5))
+            Text("No saves yet")
+                .font(.system(size: 11))
+                .foregroundColor(.dopoTextDim.opacity(0.5))
+        }
+        .frame(width: size, height: size)
+    }
+
+    private var collectionGradient: some View {
+        // Generate a unique-ish gradient based on collection name
+        let hue = Double(abs(collection.name.hashValue) % 360) / 360.0
+        return LinearGradient(
+            colors: [
+                Color(hue: hue, saturation: 0.3, brightness: 0.15),
+                Color(hue: hue, saturation: 0.2, brightness: 0.08)
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
         )
+    }
+
+    // MARK: - Data Loading
+
+    private func loadThumbnails() async {
+        guard let token, !hasLoaded else { return }
+        do {
+            let response = try await APIClient.shared.fetchLibrary(
+                token: token, collectionId: collection.id, limit: 4
+            )
+            let urls = response.saves.compactMap { $0.thumbnailUrl }
+            withAnimation(.easeIn(duration: 0.2)) {
+                thumbnails = urls
+                hasLoaded = true
+            }
+        } catch {
+            hasLoaded = true
+        }
     }
 }
 
-// MARK: - Collection Row (kept for list fallback)
+// MARK: - Shimmer Loading Effect
 
-struct CollectionRow: View {
-    let collection: DopoCollection
+struct ShimmerView: View {
+    @State private var isAnimating = false
 
     var body: some View {
-        HStack(spacing: 12) {
-            Text(collection.displayEmoji)
-                .font(.system(size: 28))
-
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 6) {
-                    Text(collection.name)
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(.dopoText)
-
-                    if collection.isPublic == true {
-                        Image(systemName: "link")
-                            .font(.system(size: 10))
-                            .foregroundColor(.dopoAccent)
-                    }
-
-                    if let isOwner = collection.isOwner, !isOwner {
-                        Image(systemName: collection.role == "editor" ? "pencil" : "eye")
-                            .font(.system(size: 10))
-                            .foregroundColor(.dopoTextDim)
-                    }
+        Rectangle()
+            .fill(Color.dopoSurface)
+            .overlay(
+                Rectangle()
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.dopoSurface,
+                                Color.dopoSurfaceHover.opacity(0.6),
+                                Color.dopoSurface
+                            ],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .offset(x: isAnimating ? 300 : -300)
+            )
+            .clipped()
+            .onAppear {
+                withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
+                    isAnimating = true
                 }
-
-                Text("\(collection.saveCount ?? 0) saves")
-                    .font(.dopoCaption)
-                    .foregroundColor(.dopoTextDim)
             }
+    }
+}
 
+// MARK: - Empty State
+
+struct EmptyCollectionsView: View {
+    let onCreateTap: () -> Void
+
+    var body: some View {
+        VStack(spacing: 20) {
             Spacer()
 
-            Image(systemName: "chevron.right")
-                .font(.system(size: 12))
-                .foregroundColor(.dopoTextDim)
+            ZStack {
+                // Layered cards visual
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.dopoSurfaceHover.opacity(0.3))
+                    .frame(width: 100, height: 100)
+                    .rotationEffect(.degrees(-8))
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.dopoSurfaceHover.opacity(0.5))
+                    .frame(width: 100, height: 100)
+                    .rotationEffect(.degrees(4))
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.dopoSurface)
+                    .frame(width: 100, height: 100)
+                    .overlay(
+                        Image(systemName: "plus")
+                            .font(.system(size: 32, weight: .light))
+                            .foregroundColor(.dopoAccent)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.dopoBorder, lineWidth: 1)
+                    )
+            }
+
+            VStack(spacing: 8) {
+                Text("Curate your saves")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(.dopoText)
+
+                Text("Group your best finds into\ncollections to keep things organized.")
+                    .font(.dopoBody)
+                    .foregroundColor(.dopoTextDim)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(2)
+            }
+
+            Button(action: onCreateTap) {
+                HStack(spacing: 8) {
+                    Image(systemName: "plus")
+                        .font(.system(size: 14, weight: .bold))
+                    Text("Create Collection")
+                        .font(.system(size: 15, weight: .semibold))
+                }
+                .foregroundColor(.white)
+                .padding(.horizontal, 28)
+                .padding(.vertical, 14)
+                .background(
+                    LinearGradient(
+                        colors: [.dopoAccent, Color(red: 1.0, green: 0.55, blue: 0.3)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .cornerRadius(14)
+                .shadow(color: .dopoAccent.opacity(0.3), radius: 8, y: 4)
+            }
+            .padding(.top, 8)
+
+            Spacer()
         }
-        .padding(.vertical, 4)
-        .listRowBackground(Color.dopoSurface)
+    }
+}
+
+// MARK: - Skeleton Loading
+
+struct CollectionsSkeletonView: View {
+    @State private var isAnimating = false
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 20) {
+                // Hero skeleton
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.dopoSurface)
+                    .frame(height: 100)
+
+                // Cards skeleton
+                LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
+                    ForEach(0..<4, id: \.self) { _ in
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(Color.dopoSurface)
+                            .aspectRatio(1, contentMode: .fit)
+                    }
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+            .opacity(isAnimating ? 0.4 : 0.8)
+            .animation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true), value: isAnimating)
+            .onAppear { isAnimating = true }
+        }
     }
 }
 
@@ -278,27 +587,35 @@ struct CreateCollectionView: View {
             ZStack {
                 Color.dopoBg.ignoresSafeArea()
 
-                VStack(spacing: 20) {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 10) {
-                            ForEach(emojiOptions, id: \.self) { e in
-                                Button(action: {
-                                    HapticManager.selection()
-                                    emoji = e
-                                }) {
-                                    Text(e)
-                                        .font(.system(size: 28))
-                                        .padding(8)
-                                        .background(emoji == e ? Color.dopoAccentGlow : Color.dopoSurface)
-                                        .cornerRadius(10)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .stroke(emoji == e ? Color.dopoAccent : Color.dopoBorder, lineWidth: 1)
-                                        )
+                VStack(spacing: 24) {
+                    // Emoji picker
+                    VStack(spacing: 10) {
+                        Text(emoji)
+                            .font(.system(size: 56))
+                            .padding(.top, 12)
+
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 10) {
+                                ForEach(emojiOptions, id: \.self) { e in
+                                    Button(action: {
+                                        HapticManager.selection()
+                                        withAnimation(.spring(response: 0.3)) { emoji = e }
+                                    }) {
+                                        Text(e)
+                                            .font(.system(size: 24))
+                                            .padding(8)
+                                            .background(emoji == e ? Color.dopoAccentGlow : Color.dopoSurface)
+                                            .cornerRadius(10)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 10)
+                                                    .stroke(emoji == e ? Color.dopoAccent : Color.dopoBorder, lineWidth: emoji == e ? 2 : 1)
+                                            )
+                                            .scaleEffect(emoji == e ? 1.1 : 1.0)
+                                    }
                                 }
                             }
+                            .padding(.horizontal)
                         }
-                        .padding(.horizontal)
                     }
 
                     TextField("Collection name", text: $name)
@@ -307,7 +624,7 @@ struct CreateCollectionView: View {
 
                     Spacer()
                 }
-                .padding(.top, 24)
+                .padding(.top, 16)
             }
             .navigationTitle("New Collection")
             .navigationBarTitleDisplayMode(.inline)
@@ -327,6 +644,7 @@ struct CreateCollectionView: View {
                             dismiss()
                         }
                     }
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.dopoAccent)
                     .disabled(name.isEmpty || isCreating)
                 }
