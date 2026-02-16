@@ -49,20 +49,13 @@ struct SaveCard: View {
                         }
                         .padding(8)
 
-                        // Platform pill badge overlay (top-left)
+                        // Platform icon (top-left)
                         VStack {
                             HStack {
-                                HStack(spacing: 3) {
-                                    Image(systemName: save.platformColor.iconName)
-                                        .font(.system(size: 8))
-                                    Text(save.platformColor.label)
-                                        .font(.system(size: 9, weight: .bold))
-                                }
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 3)
-                                .background(Color.black.opacity(0.55))
-                                .cornerRadius(6)
+                                Image(systemName: save.platformColor.iconName)
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundColor(.white)
+                                    .shadow(color: .black.opacity(0.5), radius: 3, x: 0, y: 1)
                                 Spacer()
                             }
                             Spacer()
