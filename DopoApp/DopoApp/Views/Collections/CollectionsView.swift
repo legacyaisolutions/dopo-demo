@@ -344,8 +344,8 @@ struct CollectionDetailView: View {
     @State private var isLoading = true
     @State private var errorMessage: String?
     @State private var selectedSave: Save?
-    @State private var showDeleteConfirm = false
-    @State private var saveToDelete: Save?
+    @State private var showActionSheet = false
+    @State private var actionSave: Save?
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -421,8 +421,8 @@ struct CollectionDetailView: View {
                                         Task { await toggleFavorite(save) }
                                     }, onDelete: {
                                         HapticManager.impact(.medium)
-                                        saveToDelete = save
-                                        showDeleteConfirm = true
+                                        actionSave = save
+                                        showActionSheet = true
                                     })
                                 }
                             }
@@ -442,15 +442,24 @@ struct CollectionDetailView: View {
             .sheet(item: $selectedSave) { save in
                 SaveDetailView(save: save)
             }
-            .alert("Remove from Collection", isPresented: $showDeleteConfirm) {
-                Button("Cancel", role: .cancel) {}
-                Button("Remove", role: .destructive) {
-                    if let save = saveToDelete {
-                        Task { await removeSave(save) }
+            .confirmationDialog(
+                "What would you like to do?",
+                isPresented: $showActionSheet,
+                titleVisibility: .visible
+            ) {
+                Button("Remove from \(collection.name)") {
+                    if let save = actionSave {
+                        Task { await removeFromCollection(save) }
                     }
                 }
+                Button("Delete from Library", role: .destructive) {
+                    if let save = actionSave {
+                        Task { await deleteFromLibrary(save) }
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
             } message: {
-                Text("Remove \"\(saveToDelete?.displayTitle.prefix(40) ?? "")\" from this collection?")
+                Text("\"\(actionSave?.displayTitle.prefix(50) ?? "")\"")
             }
             .task { await loadSaves() }
         }
@@ -482,10 +491,20 @@ struct CollectionDetailView: View {
         try? await APIClient.shared.toggleFavorite(token: token, saveId: save.id, isFavorite: newState)
     }
 
-    private func removeSave(_ save: Save) async {
+    /// Removes the save from THIS collection only — save stays in the library
+    private func removeFromCollection(_ save: Save) async {
         withAnimation { saves.removeAll { $0.id == save.id } }
         HapticManager.notification(.success)
-        // Note: This removes from the collection, not the whole library
+        guard let token = authManager.accessToken else { return }
+        try? await APIClient.shared.removeSaveFromCollection(
+            token: token, collectionId: collection.id, saveId: save.id
+        )
+    }
+
+    /// Permanently deletes the save from the entire library (and all collections)
+    private func deleteFromLibrary(_ save: Save) async {
+        withAnimation { saves.removeAll { $0.id == save.id } }
+        HapticManager.notification(.warning)
         guard let token = authManager.accessToken else { return }
         try? await APIClient.shared.deleteSave(token: token, saveId: save.id)
     }
