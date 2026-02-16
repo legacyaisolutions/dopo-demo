@@ -9,13 +9,14 @@ struct SaveCard: View {
     var body: some View {
         Button(action: onTap) {
             VStack(alignment: .leading, spacing: 0) {
-                // Thumbnail
+                // Thumbnail area
                 ZStack {
-                    Rectangle()
-                        .fill(platformGradient)
-                        .frame(height: 120)
-
                     if let thumbURL = save.thumbnailUrl, let url = URL(string: thumbURL) {
+                        // Has thumbnail — show image with gradient fallback
+                        Rectangle()
+                            .fill(platformGradient)
+                            .frame(height: 120)
+
                         AsyncImage(url: url) { phase in
                             switch phase {
                             case .success(let image):
@@ -24,12 +25,18 @@ struct SaveCard: View {
                                     .aspectRatio(contentMode: .fill)
                                     .frame(height: 120)
                                     .clipped()
-                            default:
-                                platformIcon
+                            case .failure:
+                                platformPlaceholder
+                            case .empty:
+                                Rectangle().fill(Color.dopoSurface)
+                                    .overlay(ProgressView().tint(.dopoTextDim))
+                            @unknown default:
+                                platformPlaceholder
                             }
                         }
                     } else {
-                        platformIcon
+                        // No thumbnail — rich platform-branded placeholder
+                        platformPlaceholder
                     }
 
                     // Enrichment dot
@@ -43,30 +50,32 @@ struct SaveCard: View {
                         Spacer()
                     }
                     .padding(8)
+
+                    // Platform pill badge overlay (top-left)
+                    VStack {
+                        HStack {
+                            HStack(spacing: 3) {
+                                Image(systemName: save.platformColor.iconName)
+                                    .font(.system(size: 8))
+                                Text(save.platformColor.label)
+                                    .font(.system(size: 9, weight: .bold))
+                            }
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 3)
+                            .background(Color.black.opacity(0.55))
+                            .cornerRadius(6)
+                            Spacer()
+                        }
+                        Spacer()
+                    }
+                    .padding(8)
                 }
                 .frame(height: 120)
                 .clipped()
 
                 // Body
                 VStack(alignment: .leading, spacing: 6) {
-                    // Platform badge
-                    HStack(spacing: 4) {
-                        Image(systemName: save.platformColor.iconName)
-                            .font(.system(size: 10))
-                        Text(save.platformColor.label)
-                            .font(.system(size: 10, weight: .semibold))
-                            .tracking(0.5)
-                        if let ct = save.contentType, !ct.isEmpty {
-                            Text("·")
-                                .foregroundColor(.dopoTextDim)
-                            Text(ct.uppercased())
-                                .font(.system(size: 9))
-                                .foregroundColor(.dopoTextDim)
-                        }
-                    }
-                    .foregroundColor(Color.platformColor(save.platform))
-                    .textCase(.uppercase)
-
                     // Title
                     Text(save.displayTitle)
                         .font(.system(size: 13, weight: .medium))
@@ -137,15 +146,57 @@ struct SaveCard: View {
         .buttonStyle(.plain)
     }
 
+    // MARK: - Rich platform placeholder (no thumbnail)
+
+    private var platformPlaceholder: some View {
+        ZStack {
+            // Bold platform-colored gradient background
+            LinearGradient(
+                colors: [
+                    Color.platformColor(save.platform).opacity(0.35),
+                    Color.platformColor(save.platform).opacity(0.10),
+                    Color.dopoSurface
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+
+            // Large faded icon in background for visual weight
+            Image(systemName: save.platformColor.iconName)
+                .font(.system(size: 52, weight: .ultraLight))
+                .foregroundColor(Color.platformColor(save.platform).opacity(0.15))
+                .offset(x: 30, y: -10)
+
+            // Centered content type or platform icon
+            VStack(spacing: 6) {
+                Image(systemName: contentTypeIcon)
+                    .font(.system(size: 26))
+                    .foregroundColor(Color.platformColor(save.platform).opacity(0.7))
+
+                if let ct = save.contentType, !ct.isEmpty {
+                    Text(ct.uppercased())
+                        .font(.system(size: 9, weight: .bold))
+                        .tracking(1)
+                        .foregroundColor(Color.platformColor(save.platform).opacity(0.5))
+                }
+            }
+        }
+        .frame(height: 120)
+    }
+
+    private var contentTypeIcon: String {
+        let ct = (save.contentType ?? "").lowercased()
+        if ct.contains("video") { return "play.rectangle.fill" }
+        if ct.contains("reel") || ct.contains("short") { return "film" }
+        if ct.contains("image") || ct.contains("photo") { return "photo.fill" }
+        if ct.contains("article") || ct.contains("post") { return "doc.text.fill" }
+        if ct.contains("story") { return "circle.dashed" }
+        return save.platformColor.iconName
+    }
+
     private var platformGradient: LinearGradient {
         let base = Color.platformColor(save.platform).opacity(0.15)
         return LinearGradient(colors: [base, Color.dopoSurfaceHover], startPoint: .topLeading, endPoint: .bottomTrailing)
-    }
-
-    private var platformIcon: some View {
-        Image(systemName: save.platformColor.iconName)
-            .font(.system(size: 32))
-            .foregroundColor(Color.platformColor(save.platform).opacity(0.6))
     }
 
     private var enrichmentColor: Color {
