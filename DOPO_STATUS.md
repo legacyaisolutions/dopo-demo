@@ -1,5 +1,5 @@
 # Dopo — Project Status & Plan
-### Updated: February 16, 2026
+### Updated: February 17, 2026 (Early Morning)
 
 ---
 
@@ -36,8 +36,8 @@ Dopo is a social curation platform for saved social media content — "Pinterest
 - [x] Duplicate detection via canonical URL matching
 - [x] Auto-triggers ai-enrich on every save (fire-and-forget)
 
-### Library API (Complete — v9)
-- [x] `library` edge function (v9) — GET (list/search), DELETE, PATCH (favorite/note/tags)
+### Library API (Complete — v10)
+- [x] `library` edge function (v10) — GET (list/search), DELETE, PATCH (favorite/note/tags)
 - [x] Full-text search via `search_saves` RPC with platform/content-type filtering
 - [x] Fuzzy ILIKE fallback when full-text returns zero results
 - [x] Pagination support (limit/offset)
@@ -51,13 +51,47 @@ Dopo is a social curation platform for saved social media content — "Pinterest
 - [x] Cross-user collection viewing — collaborators see owner's saves in shared collections
 - [x] View-only vs Editor roles — role selector on invite, role badges, role switching, UI enforcement
 
-### AI Metadata Extraction (Complete — v7)
-- [x] `ai-enrich` edge function (v7) with Gemini 2.0 Flash integration
+### AI Metadata Extraction (Complete — v13)
+- [x] `ai-enrich` edge function (v13) with Gemini 2.0 Flash integration
 - [x] Rule-based fallback when Gemini unavailable
 - [x] Single save, batch, force re-enrich, and debug modes
 - [x] 18 content categories supported
-- [x] All 25 saves enriched with AI tags and categories
+- [x] All saves enriched with AI tags and categories (8-15 tags per save, broad conceptual coverage)
 - [x] GEMINI_API_KEY configured in Supabase secrets
+- [x] 768-dim semantic embeddings via Gemini embedding-001
+- [x] All 35 saves have embeddings stored in pgvector column
+
+### AI-Powered Semantic Search (Complete — smart-search v3)
+- [x] pgvector extension enabled with HNSW index (cosine similarity)
+- [x] `semantic_search` PostgreSQL RPC function for vector similarity queries
+- [x] `smart-search` edge function (v3) with full NLP pipeline:
+  - Temporal NLP parser (last week, last month, yesterday, N days/weeks/months ago, recently, etc.)
+  - Platform detection from natural language ("on YouTube", "from Instagram")
+  - Content type detection (video, reel, photo, article)
+  - Filler word removal ("I watched", "I saved", "about", "related to")
+  - Query embedding via Gemini embedding-001 (RETRIEVAL_QUERY task type)
+  - Hybrid ranking: vector similarity (0.7 weight) + keyword FTS (0.3 weight)
+- [x] Tested and verified:
+  - "Jesus" → Biblical discovery, spiritual practices, Christian content (top 4 results)
+  - "football training drills" → All top 5 are football training content (0.79 hybrid score)
+  - "I watched a video on wide receiver routes last week" → WR-specific content with temporal filter
+  - "AI and technology" → Tech content surfaces correctly
+
+### iOS App (In Progress — v1 Scaffold Complete)
+- [x] XcodeGen project config with Supabase Swift SDK dependencies
+- [x] Auth flow: login, signup, password reset, session management
+- [x] Library view: 2-column card grid with platform filtering, pull-to-refresh
+- [x] Save cards: uniform 240pt fixed height, thumbnail with GeometryReader, platform icon overlay
+- [x] Platform-branded placeholders for cards without thumbnails (gradient + content-type icon)
+- [x] Save detail view: ThumbnailHero + metadata display + "Open on [Platform]" button (no in-app WKWebView)
+- [x] Ingest view: paste URL to save new content
+- [x] Collections view: Instagram-style mosaic cards with lazy thumbnail loading
+- [x] Collection detail: stat pills, header, share button, copy link, remove vs delete actions
+- [x] Share & collaborate: public link toggle, invite by email with role picker, collaborator list
+- [x] Profile view: gradient avatar, stat blocks, "Coming Soon" labels on pending features, sign out confirmation
+- [x] Haptic feedback throughout (impact, notification)
+- [x] Dark theme with custom color palette (dopoBg, dopoSurface, dopoAccent, etc.)
+- [x] Shimmer loading animations and skeleton views
 
 ### Web Demo Prototype (Complete)
 - [x] Single-page HTML app with auth, ingest, search, and card-based library
@@ -111,7 +145,8 @@ Dopo is a social curation platform for saved social media content — "Pinterest
 |----------|---------|---------|--------|
 | `ingest` | v10 | URL parsing + metadata enrichment + auto-enrich trigger | ACTIVE |
 | `library` | v10 | CRUD + search + collections + sharing + collaborators + cross-user collection saves | ACTIVE |
-| `ai-enrich` | v7 | Gemini AI tag generation + categorization | ACTIVE |
+| `ai-enrich` | v13 | Gemini AI tags + categorization + 768-dim embeddings | ACTIVE |
+| `smart-search` | v3 | Semantic vector search + temporal NLP + hybrid ranking | ACTIVE |
 | `upload-demo` | v1 | Utility for pushing HTML to Supabase storage | ACTIVE |
 | `demo` | v6 | (Deprecated — Vercel hosts demo now) | ACTIVE |
 
@@ -138,32 +173,40 @@ Dopo is a social curation platform for saved social media content — "Pinterest
 - ~~Collaborative collections~~ → DONE — invite by email, editor role, cross-user saves
 - ~~Patent filing guide~~ → DONE — comprehensive .docx with step-by-step USPTO process
 - ~~Third demo account~~ → DONE — adaraskog@gmail.com with collaboration tested
+- ~~iOS App Scaffold~~ → DONE — full SwiftUI app with auth, library, collections, profile
+- ~~SaveCard uniform sizing~~ → DONE — fixed 240pt height, GeometryReader, platform icon overlay
+- ~~Instagram-style collections~~ → DONE — mosaic thumbnails, shimmer loading, create with emoji
+- ~~Collection share/collaborate~~ → DONE — toggle share, invite, roles, collaborator management
+- ~~Remove vs Delete actions~~ → DONE — separate "remove from collection" and "delete from library"
 
-### Immediate Priority
-1. **Add TikTok test saves** — demonstrate 5-platform coverage (parser is ready, no test data)
-2. **Fix Facebook enrichment** — consider alternative metadata sources or manual title override
-3. **Delete save functionality** in demo UI — API already supports DELETE, needs a button
-4. **Demo polish** — mobile responsive tweaks, loading skeletons, better error handling
-5. **Register social handles** (@dopo / @getdopo on X, Instagram, TikTok)
+### ✅ Recently Completed (Feb 16-17)
+- ~~AI-Powered Semantic Search~~ → DONE — pgvector + Gemini embedding-001 + smart-search v3
+- ~~Embeddings backfill~~ → DONE — all 35 saves have 768-dim vectors
+- ~~Temporal NLP parsing~~ → DONE — "last week", "yesterday", "N months ago", etc.
+- ~~Hybrid ranking~~ → DONE — 0.7 vector + 0.3 keyword scoring
+- ~~Concept expansion via embeddings~~ → DONE — "Jesus" correctly finds Christianity content
+
+### 🔥 Current Priority: Wire Search into Apps
 
 ### Next Phase (Weeks 2-3)
-6. **User profiles page** — public profile with collections grid, bio, save count
-7. **Follow graph** — follow users, discovery feed of public collections
-8. **Notification system** — collaborator invites, new saves in shared collections
-9. **Transactional email** — invite notifications via Resend or SendGrid
-10. **Contractor job posting** — leverage live demo (now with sharing!) + architecture doc
+6. **Add TikTok test saves** — demonstrate 5-platform coverage
+7. **Fix Facebook enrichment** — alternative metadata sources or manual override
+8. **User profiles page** — public profile with collections grid, bio, save count
+9. **Follow graph** — follow users, discovery feed of public collections
+10. **Notification system** — collaborator invites, new saves in shared collections
+11. **Register social handles** (@dopo / @getdopo on X, Instagram, TikTok)
 
 ### Phase 0 Gate (Requires iOS Contractor)
-11. **iOS Share Extension POC** — Instagram + YouTube capture via share sheet
-12. **Basic iOS app shell** — SwiftUI with Supabase auth + library display
+12. **iOS Share Extension POC** — Instagram + YouTube capture via share sheet
 13. **TestFlight deployment** for personal testing
+14. **App Store submission** for beta
 
 ### Production Readiness
-14. **Dedicated share routes** — `/c/:token` instead of `?shared=token`
-15. **Rate limiting** on ingest and API endpoints
-16. **Image proxy/CDN** for thumbnails (reliability + privacy)
-17. **Supabase Pro upgrade** — leaked password protection, higher limits
-18. **File provisional patent** — guide ready, needs execution
+15. **Dedicated share routes** — `/c/:token` instead of `?shared=token`
+16. **Rate limiting** on ingest and API endpoints
+17. **Image proxy/CDN** for thumbnails (reliability + privacy)
+18. **Supabase Pro upgrade** — leaked password protection, higher limits
+19. **File provisional patent** — guide ready, needs execution
 
 ---
 
@@ -174,17 +217,23 @@ User → iOS Share Sheet → Dopo Share Extension
                               ↓
                         Supabase Edge Functions
                         ├── ingest v10 (URL parse + enrich + auto-AI)
-                        ├── ai-enrich v7 (Gemini AI tags/categories)
-                        ├── library v9 (CRUD + search + collections + sharing + collab)
+                        ├── ai-enrich v7 (Gemini AI tags/categories + embeddings)
+                        ├── library v10 (CRUD + search + collections + sharing + collab)
+                        ├── smart-search v1 (semantic vector search + temporal NLP)
                         └── [future: follow graph + notifications]
                               ↓
                         PostgreSQL (Supabase)
-                        ├── saves (with search_vector, ai_tags, category)
+                        ├── saves (search_vector, ai_tags, category, embedding vector)
                         ├── profiles
                         ├── collections (is_public, share_token, description)
                         ├── collection_saves
                         ├── collection_collaborators (role, accepted, invited_email)
                         └── waitlist
+                              ↓
+                        AI Pipeline
+                        ├── Gemini 2.0 Flash (tags, categories, descriptions)
+                        ├── Gemini embedding-001 (768-dim truncated from 3072)
+                        └── pgvector (HNSW index, cosine similarity)
 ```
 
 ## Key Credentials & URLs
@@ -220,6 +269,12 @@ User → iOS Share Sheet → Dopo Share Extension
 | Feb 16 | Collections UI + Share/Collab shipped same day | Backend was ready; front-end build validated full stack |
 | Feb 16 | Auto-accept collaborator invites for existing users | Simpler for demo; pending invites stored for future signups |
 | Feb 16 | Share token on query param for MVP | `?shared=TOKEN` avoids routing complexity; clean URL in production |
+| Feb 16 | iOS app scaffold built in single session | Validated full SwiftUI + Supabase integration end-to-end |
+| Feb 16 | pgvector for semantic search | Keyword search can't handle "Jesus" → Christianity; embeddings required |
+| Feb 16 | Gemini embedding-001 (768-dim truncated) | Only embedding model available on free tier; outputDimensionality=768 fits HNSW 2000-dim limit |
+| Feb 16 | Hybrid search (vector + FTS + temporal) | Best of all worlds: meaning, keywords, and time-awareness |
+| Feb 17 | v1beta API for embeddings | text-embedding-004 not available; gemini-embedding-001 is the correct model name |
+| Feb 17 | 0.7/0.3 vector/keyword weight | Vector search handles conceptual queries; keyword catches exact matches |
 
 ---
 
@@ -234,7 +289,9 @@ User → iOS Share Sheet → Dopo Share Extension
 | Platform API changes | Medium | High | Cache metadata at save time; build value on curation layer |
 | Patent timeline | Low | Low | File provisional ASAP for priority date |
 | No technical co-founder | High | High | Use live demo + sharing data to recruit |
+| Embedding costs at scale | Medium | Low | Gemini free tier covers prototype; budget $50-100/mo for production |
+| Vector search latency | Medium | Low | HNSW index keeps queries <50ms even at 100K+ saves |
 
 ---
 
-*Last updated by Claude — February 16, 2026*
+*Last updated by Claude — February 17, 2026 (Early Morning Session)*

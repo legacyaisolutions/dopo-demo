@@ -87,6 +87,30 @@ class APIClient {
         }
     }
 
+    // MARK: - Smart Search (AI-powered natural language search)
+
+    func smartSearch(
+        token: String,
+        query: String,
+        platform: String? = nil,
+        limit: Int = 30
+    ) async throws -> SmartSearchResponse {
+        var request = URLRequest(url: URL(string: DopoConfig.smartSearchURL)!)
+        request.httpMethod = "POST"
+        request.allHTTPHeaderFields = authHeaders(token)
+        var body: [String: Any] = ["q": query, "limit": limit]
+        if let platform, !platform.isEmpty, platform != "all" {
+            body["platform"] = platform
+        }
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        let (data, _) = try await performRequest(request)
+        do {
+            return try JSONDecoder().decode(SmartSearchResponse.self, from: data)
+        } catch {
+            throw APIError.decodingError(error)
+        }
+    }
+
     // MARK: - Ingest
 
     func ingestURL(token: String, urlString: String) async throws -> IngestResponse {

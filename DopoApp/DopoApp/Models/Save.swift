@@ -89,6 +89,33 @@ struct IngestResponse: Codable {
     let error: String?
 }
 
+struct SmartSearchResponse: Codable {
+    let saves: [Save]
+    let total: Int
+    let query: String
+    let parsed: SearchParsed?
+    let searchMethod: String?
+
+    enum CodingKeys: String, CodingKey {
+        case saves, total, query, parsed
+        case searchMethod = "search_method"
+    }
+}
+
+struct SearchParsed: Codable {
+    let semanticQuery: String?
+    let platform: String?
+    let contentType: String?
+    let temporal: String?
+
+    enum CodingKeys: String, CodingKey {
+        case semanticQuery = "semantic_query"
+        case platform
+        case contentType = "content_type"
+        case temporal
+    }
+}
+
 enum PlatformTheme {
     case youtube, instagram, tiktok, twitter, facebook, other
 

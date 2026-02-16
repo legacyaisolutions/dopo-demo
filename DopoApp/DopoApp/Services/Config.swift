@@ -6,5 +6,6 @@ enum DopoConfig {
 
     static let libraryURL = "\(supabaseURL)/functions/v1/library"
     static let ingestURL = "\(supabaseURL)/functions/v1/ingest"
+    static let smartSearchURL = "\(supabaseURL)/functions/v1/smart-search"
     static let authURL = "\(supabaseURL)/auth/v1"
 }

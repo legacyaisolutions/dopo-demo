@@ -49,13 +49,10 @@ struct SaveCard: View {
                         }
                         .padding(8)
 
-                        // Platform icon (top-left)
+                        // Platform logo (top-left)
                         VStack {
                             HStack {
-                                Image(systemName: save.platformColor.iconName)
-                                    .font(.system(size: 14, weight: .semibold))
-                                    .foregroundColor(.white)
-                                    .shadow(color: .black.opacity(0.5), radius: 3, x: 0, y: 1)
+                                PlatformLogoOverlay(save.platformColor, size: 22)
                                 Spacer()
                             }
                             Spacer()
@@ -157,10 +154,9 @@ struct SaveCard: View {
                 endPoint: .bottomTrailing
             )
 
-            // Large faded icon in background for visual weight
-            Image(systemName: save.platformColor.iconName)
-                .font(.system(size: 52, weight: .ultraLight))
-                .foregroundColor(Color.platformColor(save.platform).opacity(0.15))
+            // Large faded logo in background for visual weight
+            PlatformLogo(save.platformColor, size: 52)
+                .opacity(0.15)
                 .offset(x: 30, y: -10)
 
             // Centered content type or platform icon
@@ -204,31 +200,3 @@ struct SaveCard: View {
     }
 }
 
-struct PlatformPill: View {
-    let platform: String
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 5) {
-                if platform != "all" {
-                    Image(systemName: PlatformTheme.from(platform).iconName)
-                        .font(.system(size: 11))
-                }
-                Text(platform == "all" ? "All" : PlatformTheme.from(platform).label)
-                    .font(.system(size: 13, weight: .medium))
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
-            .background(isSelected ? Color.dopoAccentGlow : Color.dopoSurface)
-            .foregroundColor(isSelected ? .dopoAccent : .dopoTextMuted)
-            .cornerRadius(20)
-            .overlay(
-                RoundedRectangle(cornerRadius: 20)
-                    .stroke(isSelected ? Color.dopoAccent : Color.dopoBorder, lineWidth: 1)
-            )
-        }
-        .buttonStyle(.plain)
-    }
-}

@@ -10,17 +10,18 @@ struct LibraryView: View {
     @State private var selectedSave: Save?
     @State private var showDeleteConfirm = false
     @State private var saveToDelete: Save?
+    @State private var searchHint: String?
 
     let platforms = ["all", "youtube", "instagram", "tiktok", "twitter", "facebook"]
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // Platform filter pills
+                // Platform filter bubbles with brand logos
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         ForEach(platforms, id: \.self) { platform in
-                            PlatformPill(
+                            PlatformLogoPill(
                                 platform: platform,
                                 isSelected: selectedPlatform == platform
                             ) {
@@ -35,6 +36,22 @@ struct LibraryView: View {
                 }
 
                 Divider().background(Color.dopoBorder)
+
+                // Search context hint (shows what smart-search parsed)
+                if let hint = searchHint, !searchText.isEmpty {
+                    HStack(spacing: 6) {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 11))
+                            .foregroundColor(.dopoAccent)
+                        Text(hint)
+                            .font(.system(size: 11))
+                            .foregroundColor(.dopoTextMuted)
+                        Spacer()
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 6)
+                    .background(Color.dopoSurface)
+                }
 
                 // Content
                 if isLoading {
@@ -110,10 +127,21 @@ struct LibraryView: View {
 
     private func loadSaves() async {
         guard let token = authManager.accessToken else { return }
+
+        // Use smart-search when there's a search query, standard library otherwise
+        if !searchText.isEmpty {
+            await smartSearchSaves(token: token)
+        } else {
+            await fetchLibrarySaves(token: token)
+        }
+    }
+
+    /// Standard library fetch (no search query)
+    private func fetchLibrarySaves(token: String) async {
         do {
+            searchHint = nil
             let response = try await APIClient.shared.fetchLibrary(
                 token: token,
-                query: searchText.isEmpty ? nil : searchText,
                 platform: selectedPlatform == "all" ? nil : selectedPlatform
             )
             withAnimation(.easeInOut(duration: 0.2)) {
@@ -123,11 +151,48 @@ struct LibraryView: View {
             }
         } catch {
             withAnimation {
-                if saves.isEmpty {
-                    errorMessage = error.localizedDescription
-                }
+                if saves.isEmpty { errorMessage = error.localizedDescription }
                 isLoading = false
             }
+        }
+    }
+
+    /// AI-powered smart search with natural language understanding
+    private func smartSearchSaves(token: String) async {
+        do {
+            let response = try await APIClient.shared.smartSearch(
+                token: token,
+                query: searchText,
+                platform: selectedPlatform == "all" ? nil : selectedPlatform
+            )
+
+            // Build a human-readable hint from the parsed query
+            var hints: [String] = []
+            if let parsed = response.parsed {
+                if let semantic = parsed.semanticQuery, !semantic.isEmpty {
+                    hints.append("\"\(semantic)\"")
+                }
+                if let temporal = parsed.temporal {
+                    hints.append(temporal)
+                }
+                if let platform = parsed.platform {
+                    hints.append("on \(platform)")
+                }
+                if let contentType = parsed.contentType {
+                    hints.append(contentType)
+                }
+            }
+            let method = response.searchMethod == "hybrid" ? "AI search" : "keyword search"
+
+            withAnimation(.easeInOut(duration: 0.2)) {
+                saves = response.saves
+                searchHint = hints.isEmpty ? nil : "\(method): \(hints.joined(separator: " · ")) — \(response.total) results"
+                errorMessage = nil
+                isLoading = false
+            }
+        } catch {
+            // Fallback to standard library search if smart-search fails
+            await fetchLibrarySaves(token: authManager.accessToken ?? "")
         }
     }
 
@@ -147,6 +212,38 @@ struct LibraryView: View {
         try? await APIClient.shared.deleteSave(token: token, saveId: save.id)
     }
 }
+
+// MARK: - Platform Logo Pill (with brand logos)
+
+struct PlatformLogoPill: View {
+    let platform: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                if platform != "all" {
+                    PlatformLogo(platform, size: 18)
+                }
+                Text(platform == "all" ? "All" : PlatformTheme.from(platform).label)
+                    .font(.system(size: 13, weight: .medium))
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(isSelected ? Color.dopoAccentGlow : Color.dopoSurface)
+            .foregroundColor(isSelected ? .dopoAccent : .dopoTextMuted)
+            .cornerRadius(20)
+            .overlay(
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(isSelected ? Color.dopoAccent : Color.dopoBorder, lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Supporting Views
 
 struct EmptyLibraryView: View {
     let hasSearch: Bool
