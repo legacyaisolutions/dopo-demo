@@ -38,28 +38,33 @@ struct PlatformLogo: View {
     }
 }
 
-// MARK: - YouTube (Play triangle inside rounded rect)
+// MARK: - YouTube (Red rounded rect with white play triangle)
 struct YouTubeLogo: View {
     let size: CGFloat
 
     var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: size * 0.2)
-                .fill(Color(red: 1.0, green: 0.0, blue: 0.0))
-                .frame(width: size, height: size * 0.7)
+        Canvas { context, canvasSize in
+            let s = canvasSize.width
+            let rectH = s * 0.72
+            let rectW = s
+            let rectY = (s - rectH) / 2
+            let cornerR = rectH * 0.28
 
-            // Play triangle
-            Path { path in
-                let w = size * 0.3
-                let h = size * 0.35
-                let x = (size - w) / 2 + w * 0.1
-                let y = (size * 0.7 - h) / 2
-                path.move(to: CGPoint(x: x, y: y))
-                path.addLine(to: CGPoint(x: x + w, y: y + h / 2))
-                path.addLine(to: CGPoint(x: x, y: y + h))
-                path.closeSubpath()
-            }
-            .fill(.white)
+            // Red rounded rectangle background
+            let rectPath = Path(roundedRect: CGRect(x: 0, y: rectY, width: rectW, height: rectH), cornerRadius: cornerR)
+            context.fill(rectPath, with: .color(Color(red: 1.0, green: 0.0, blue: 0.0)))
+
+            // White play triangle — centered in the rect
+            let triW = s * 0.32
+            let triH = s * 0.36
+            let triX = (s - triW) / 2 + triW * 0.08 // nudge right slightly since triangle visual center is left of geometric center
+            let triY = (s - triH) / 2
+            var tri = Path()
+            tri.move(to: CGPoint(x: triX, y: triY))
+            tri.addLine(to: CGPoint(x: triX + triW, y: triY + triH / 2))
+            tri.addLine(to: CGPoint(x: triX, y: triY + triH))
+            tri.closeSubpath()
+            context.fill(tri, with: .color(.white))
         }
         .frame(width: size, height: size)
     }
@@ -177,7 +182,7 @@ struct TikTokNoteShape: Shape {
     }
 }
 
-// MARK: - X / Twitter (X letterform)
+// MARK: - X / Twitter (Stylized X on black circle)
 struct XLogo: View {
     let size: CGFloat
 
@@ -187,27 +192,34 @@ struct XLogo: View {
                 .fill(.black)
                 .frame(width: size, height: size)
 
-            // X letterform
-            Path { path in
-                let s = size
-                let inset = s * 0.25
-                let w = s * 0.12
+            Canvas { context, canvasSize in
+                let s = canvasSize.width
+                let pad = s * 0.24
+                let top = pad
+                let bot = s - pad
+                let left = pad
+                let right = s - pad
 
-                // Top-left to bottom-right stroke
-                path.move(to: CGPoint(x: inset, y: inset))
-                path.addLine(to: CGPoint(x: inset + w, y: inset))
-                path.addLine(to: CGPoint(x: s - inset, y: s - inset))
-                path.addLine(to: CGPoint(x: s - inset - w, y: s - inset))
-                path.closeSubpath()
+                // The X/Twitter logo is two crossing strokes with specific widths
+                // Top-left to bottom-right (thicker stroke)
+                var stroke1 = Path()
+                stroke1.move(to: CGPoint(x: left, y: top))
+                stroke1.addLine(to: CGPoint(x: left + s * 0.14, y: top))
+                stroke1.addLine(to: CGPoint(x: right, y: bot))
+                stroke1.addLine(to: CGPoint(x: right - s * 0.14, y: bot))
+                stroke1.closeSubpath()
+                context.fill(stroke1, with: .color(.white))
 
-                // Top-right to bottom-left stroke
-                path.move(to: CGPoint(x: s - inset, y: inset))
-                path.addLine(to: CGPoint(x: s - inset, y: inset + w))
-                path.addLine(to: CGPoint(x: inset, y: s - inset))
-                path.addLine(to: CGPoint(x: inset, y: s - inset - w))
-                path.closeSubpath()
+                // Top-right to bottom-left (thinner stroke)
+                var stroke2 = Path()
+                stroke2.move(to: CGPoint(x: right, y: top))
+                stroke2.addLine(to: CGPoint(x: right, y: top + s * 0.10))
+                stroke2.addLine(to: CGPoint(x: left, y: bot))
+                stroke2.addLine(to: CGPoint(x: left, y: bot - s * 0.10))
+                stroke2.closeSubpath()
+                context.fill(stroke2, with: .color(.white))
             }
-            .fill(.white)
+            .frame(width: size, height: size)
         }
         .frame(width: size, height: size)
     }
