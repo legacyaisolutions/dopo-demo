@@ -108,7 +108,7 @@ Dopo is a social curation platform for saved social media content — "Pinterest
 | Function | Version | Purpose | Status |
 |----------|---------|---------|--------|
 | `ingest` | v10 | URL parsing + metadata enrichment + auto-enrich trigger | ACTIVE |
-| `library` | v9 | CRUD + search + collections + sharing + collaborators | ACTIVE |
+| `library` | v10 | CRUD + search + collections + sharing + collaborators + cross-user collection saves | ACTIVE |
 | `ai-enrich` | v7 | Gemini AI tag generation + categorization | ACTIVE |
 | `upload-demo` | v1 | Utility for pushing HTML to Supabase storage | ACTIVE |
 | `demo` | v6 | (Deprecated — Vercel hosts demo now) | ACTIVE |
