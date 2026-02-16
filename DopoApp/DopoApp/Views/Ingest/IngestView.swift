@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct IngestView: View {
     @EnvironmentObject var authManager: AuthManager
@@ -38,8 +39,8 @@ struct IngestView: View {
 
                                 TextField("Paste a URL...", text: $urlText)
                                     .keyboardType(.URL)
-                                    .autocapitalization(.none)
-                                    .disableAutocorrection(true)
+                                    .textInputAutocapitalization(.never)
+                                    .autocorrectionDisabled(true)
                                     .foregroundColor(.dopoText)
                                     .focused($isURLFieldFocused)
 

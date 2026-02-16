@@ -78,7 +78,7 @@ struct LibraryView: View {
                 }
             }
             .searchable(text: $searchText, prompt: "Search your library...")
-            .onChange(of: searchText) { _, _ in
+            .onChange(of: searchText) { _ in
                 Task {
                     try? await Task.sleep(nanoseconds: 300_000_000)
                     await loadSaves()

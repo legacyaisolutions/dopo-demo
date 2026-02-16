@@ -39,8 +39,8 @@ struct AuthView: View {
                         .textFieldStyle(DopoTextFieldStyle())
                         .textContentType(.emailAddress)
                         .keyboardType(.emailAddress)
-                        .autocapitalization(.none)
-                        .disableAutocorrection(true)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled(true)
 
                     SecureField("Password", text: $password)
                         .textFieldStyle(DopoTextFieldStyle())
