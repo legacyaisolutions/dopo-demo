@@ -9,67 +9,66 @@ struct SaveCard: View {
     var body: some View {
         Button(action: onTap) {
             VStack(alignment: .leading, spacing: 0) {
-                // Thumbnail area
-                ZStack {
-                    if let thumbURL = save.thumbnailUrl, let url = URL(string: thumbURL) {
-                        // Has thumbnail — show image with gradient fallback
-                        Rectangle()
-                            .fill(platformGradient)
-                            .frame(height: 120)
+                // Thumbnail area — locked to 120pt
+                GeometryReader { geo in
+                    ZStack {
+                        if let thumbURL = save.thumbnailUrl, let url = URL(string: thumbURL) {
+                            Rectangle()
+                                .fill(platformGradient)
 
-                        AsyncImage(url: url) { phase in
-                            switch phase {
-                            case .success(let image):
-                                image
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(height: 120)
-                                    .clipped()
-                            case .failure:
-                                platformPlaceholder
-                            case .empty:
-                                Rectangle().fill(Color.dopoSurface)
-                                    .overlay(ProgressView().tint(.dopoTextDim))
-                            @unknown default:
-                                platformPlaceholder
+                            AsyncImage(url: url) { phase in
+                                switch phase {
+                                case .success(let image):
+                                    image
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fill)
+                                        .frame(width: geo.size.width, height: 120)
+                                        .clipped()
+                                case .failure:
+                                    platformPlaceholder
+                                case .empty:
+                                    Rectangle().fill(Color.dopoSurface)
+                                        .overlay(ProgressView().tint(.dopoTextDim))
+                                @unknown default:
+                                    platformPlaceholder
+                                }
                             }
+                        } else {
+                            platformPlaceholder
                         }
-                    } else {
-                        // No thumbnail — rich platform-branded placeholder
-                        platformPlaceholder
-                    }
 
-                    // Enrichment dot
-                    VStack {
-                        HStack {
-                            Spacer()
-                            Circle()
-                                .fill(enrichmentColor)
-                                .frame(width: 8, height: 8)
-                        }
-                        Spacer()
-                    }
-                    .padding(8)
-
-                    // Platform pill badge overlay (top-left)
-                    VStack {
-                        HStack {
-                            HStack(spacing: 3) {
-                                Image(systemName: save.platformColor.iconName)
-                                    .font(.system(size: 8))
-                                Text(save.platformColor.label)
-                                    .font(.system(size: 9, weight: .bold))
+                        // Enrichment dot
+                        VStack {
+                            HStack {
+                                Spacer()
+                                Circle()
+                                    .fill(enrichmentColor)
+                                    .frame(width: 8, height: 8)
                             }
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 3)
-                            .background(Color.black.opacity(0.55))
-                            .cornerRadius(6)
                             Spacer()
                         }
-                        Spacer()
+                        .padding(8)
+
+                        // Platform pill badge overlay (top-left)
+                        VStack {
+                            HStack {
+                                HStack(spacing: 3) {
+                                    Image(systemName: save.platformColor.iconName)
+                                        .font(.system(size: 8))
+                                    Text(save.platformColor.label)
+                                        .font(.system(size: 9, weight: .bold))
+                                }
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 3)
+                                .background(Color.black.opacity(0.55))
+                                .cornerRadius(6)
+                                Spacer()
+                            }
+                            Spacer()
+                        }
+                        .padding(8)
                     }
-                    .padding(8)
                 }
                 .frame(height: 120)
                 .clipped()
@@ -141,9 +140,11 @@ struct SaveCard: View {
                 .padding(10)
                 .frame(height: 120)
             }
+            .frame(height: 240)
             .background(Color.dopoSurface)
             .cornerRadius(12)
             .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.dopoBorder, lineWidth: 1))
+            .clipped()
         }
         .buttonStyle(.plain)
     }
