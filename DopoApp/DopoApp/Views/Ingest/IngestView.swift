@@ -190,6 +190,7 @@ struct IngestView: View {
     }
 
     private func pasteFromClipboard() {
+        HapticManager.impact(.light)
         if let clipboardString = UIPasteboard.general.string {
             urlText = clipboardString
         }
@@ -206,6 +207,7 @@ struct IngestView: View {
 
         do {
             let response = try await APIClient.shared.ingestURL(token: token, urlString: trimmed)
+            HapticManager.notification(.success)
             withAnimation {
                 result = IngestResult(
                     title: response.save?.displayTitle,
@@ -214,8 +216,9 @@ struct IngestView: View {
                 isIngesting = false
             }
         } catch {
+            HapticManager.notification(.error)
             withAnimation {
-                errorMessage = "Failed to save. Check the URL and try again."
+                errorMessage = error.localizedDescription
                 isIngesting = false
             }
         }

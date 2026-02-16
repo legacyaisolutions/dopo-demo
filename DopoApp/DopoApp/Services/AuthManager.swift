@@ -7,8 +7,10 @@ class AuthManager: ObservableObject {
     @Published var isLoading = true
     @Published var currentUser: AuthUser?
     @Published var error: String?
+    @Published var sessionExpired = false
 
     private let tokenKey = "dopo_access_token"
+    private let refreshTokenKey = "dopo_refresh_token"
 
     struct AuthUser: Codable {
         let id: String
@@ -17,6 +19,7 @@ class AuthManager: ObservableObject {
 
     struct AuthResponse: Codable {
         let accessToken: String?
+        let refreshToken: String?
         let user: AuthUser?
         let error: String?
         let errorDescription: String?
@@ -24,6 +27,7 @@ class AuthManager: ObservableObject {
 
         enum CodingKeys: String, CodingKey {
             case accessToken = "access_token"
+            case refreshToken = "refresh_token"
             case user, error, msg
             case errorDescription = "error_description"
         }
@@ -33,7 +37,17 @@ class AuthManager: ObservableObject {
         UserDefaults.standard.string(forKey: tokenKey)
     }
 
+    private var refreshToken: String? {
+        UserDefaults.standard.string(forKey: refreshTokenKey)
+    }
+
     init() {
+        // Wire up 401 handler so expired tokens auto-logout
+        APIClient.shared.onUnauthorized = { [weak self] in
+            Task { @MainActor in
+                await self?.handleUnauthorized()
+            }
+        }
         Task { await checkSession() }
     }
 
@@ -47,10 +61,26 @@ class AuthManager: ObservableObject {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             request.setValue(DopoConfig.supabaseAnonKey, forHTTPHeaderField: "apikey")
             let (data, response) = try await URLSession.shared.data(for: request)
-            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            guard let httpResponse = response as? HTTPURLResponse else {
                 logout()
                 return
             }
+
+            if httpResponse.statusCode == 401 {
+                // Try refreshing the token before giving up
+                let refreshed = await attemptTokenRefresh()
+                if !refreshed {
+                    logout()
+                }
+                isLoading = false
+                return
+            }
+
+            guard httpResponse.statusCode == 200 else {
+                logout()
+                return
+            }
+
             let user = try JSONDecoder().decode(AuthUser.self, from: data)
             currentUser = user
             isAuthenticated = true
@@ -85,6 +115,10 @@ class AuthManager: ObservableObject {
             }
 
             UserDefaults.standard.set(token, forKey: tokenKey)
+            if let refresh = authResponse.refreshToken {
+                UserDefaults.standard.set(refresh, forKey: refreshTokenKey)
+            }
+            sessionExpired = false
             currentUser = user
             isAuthenticated = true
         } catch {
@@ -111,9 +145,11 @@ class AuthManager: ObservableObject {
                 return
             }
 
-            // If access token returned, auto-login
             if let token = authResponse.accessToken, let user = authResponse.user {
                 UserDefaults.standard.set(token, forKey: tokenKey)
+                if let refresh = authResponse.refreshToken {
+                    UserDefaults.standard.set(refresh, forKey: refreshTokenKey)
+                }
                 currentUser = user
                 isAuthenticated = true
             } else {
@@ -126,8 +162,51 @@ class AuthManager: ObservableObject {
 
     func logout() {
         UserDefaults.standard.removeObject(forKey: tokenKey)
+        UserDefaults.standard.removeObject(forKey: refreshTokenKey)
         currentUser = nil
         isAuthenticated = false
         isLoading = false
+    }
+
+    // MARK: - Token Refresh
+
+    private func attemptTokenRefresh() async -> Bool {
+        guard let refresh = refreshToken else { return false }
+        do {
+            let body = ["refresh_token": refresh]
+            var request = URLRequest(url: URL(string: "\(DopoConfig.authURL)/token?grant_type=refresh_token")!)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue(DopoConfig.supabaseAnonKey, forHTTPHeaderField: "apikey")
+            request.httpBody = try JSONEncoder().encode(body)
+
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+                return false
+            }
+
+            let authResponse = try JSONDecoder().decode(AuthResponse.self, from: data)
+            guard let newToken = authResponse.accessToken, let user = authResponse.user else {
+                return false
+            }
+
+            UserDefaults.standard.set(newToken, forKey: tokenKey)
+            if let newRefresh = authResponse.refreshToken {
+                UserDefaults.standard.set(newRefresh, forKey: refreshTokenKey)
+            }
+            currentUser = user
+            isAuthenticated = true
+            return true
+        } catch {
+            return false
+        }
+    }
+
+    private func handleUnauthorized() async {
+        let refreshed = await attemptTokenRefresh()
+        if !refreshed {
+            sessionExpired = true
+            logout()
+        }
     }
 }

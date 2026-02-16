@@ -4,6 +4,7 @@ struct LibraryView: View {
     @EnvironmentObject var authManager: AuthManager
     @State private var saves: [Save] = []
     @State private var isLoading = true
+    @State private var errorMessage: String?
     @State private var searchText = ""
     @State private var selectedPlatform = "all"
     @State private var selectedSave: Save?
@@ -26,6 +27,7 @@ struct LibraryView: View {
                                     platform: platform,
                                     isSelected: selectedPlatform == platform
                                 ) {
+                                    HapticManager.selection()
                                     selectedPlatform = platform
                                     Task { await loadSaves() }
                                 }
@@ -40,6 +42,10 @@ struct LibraryView: View {
                     // Content
                     if isLoading {
                         SkeletonGrid()
+                    } else if let errorMessage {
+                        ErrorBanner(message: errorMessage) {
+                            Task { await loadSaves() }
+                        }
                     } else if saves.isEmpty {
                         EmptyLibraryView(hasSearch: !searchText.isEmpty)
                     } else {
@@ -49,10 +55,13 @@ struct LibraryView: View {
                             ], spacing: 12) {
                                 ForEach(saves) { save in
                                     SaveCard(save: save, onTap: {
+                                        HapticManager.impact(.light)
                                         selectedSave = save
                                     }, onFavorite: {
+                                        HapticManager.impact(.light)
                                         Task { await toggleFavorite(save) }
                                     }, onDelete: {
+                                        HapticManager.impact(.medium)
                                         saveToDelete = save
                                         showDeleteConfirm = true
                                     })
@@ -112,17 +121,22 @@ struct LibraryView: View {
             )
             withAnimation(.easeInOut(duration: 0.2)) {
                 saves = response.saves
+                errorMessage = nil
                 isLoading = false
             }
         } catch {
-            isLoading = false
+            withAnimation {
+                if saves.isEmpty {
+                    errorMessage = error.localizedDescription
+                }
+                isLoading = false
+            }
         }
     }
 
     private func toggleFavorite(_ save: Save) async {
         guard let token = authManager.accessToken else { return }
         let newState = !(save.isFavorite ?? false)
-        // Optimistic update
         if let idx = saves.firstIndex(where: { $0.id == save.id }) {
             saves[idx].isFavorite = newState
         }
@@ -132,6 +146,7 @@ struct LibraryView: View {
     private func deleteSave(_ save: Save) async {
         guard let token = authManager.accessToken else { return }
         withAnimation { saves.removeAll { $0.id == save.id } }
+        HapticManager.notification(.success)
         try? await APIClient.shared.deleteSave(token: token, saveId: save.id)
     }
 }

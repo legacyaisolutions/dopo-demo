@@ -1,7 +1,30 @@
 import Foundation
 
+enum APIError: LocalizedError {
+    case unauthorized
+    case serverError(Int)
+    case networkError(Error)
+    case decodingError(Error)
+
+    var errorDescription: String? {
+        switch self {
+        case .unauthorized:
+            return "Session expired. Please sign in again."
+        case .serverError(let code):
+            return "Server error (\(code)). Please try again."
+        case .networkError:
+            return "Couldn't connect. Check your internet and try again."
+        case .decodingError:
+            return "Something went wrong. Please try again."
+        }
+    }
+}
+
 class APIClient {
     static let shared = APIClient()
+
+    /// Callback for 401s — AuthManager sets this to trigger logout
+    var onUnauthorized: (() -> Void)?
 
     private func authHeaders(_ token: String) -> [String: String] {
         [
@@ -9,6 +32,32 @@ class APIClient {
             "apikey": DopoConfig.supabaseAnonKey,
             "Content-Type": "application/json"
         ]
+    }
+
+    /// Centralized request method with error handling and 401 detection
+    private func performRequest(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await URLSession.shared.data(for: request)
+        } catch {
+            throw APIError.networkError(error)
+        }
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.serverError(0)
+        }
+
+        if httpResponse.statusCode == 401 {
+            await MainActor.run { onUnauthorized?() }
+            throw APIError.unauthorized
+        }
+
+        if httpResponse.statusCode >= 500 {
+            throw APIError.serverError(httpResponse.statusCode)
+        }
+
+        return (data, httpResponse)
     }
 
     // MARK: - Library
@@ -30,8 +79,12 @@ class APIClient {
 
         var request = URLRequest(url: components.url!)
         request.allHTTPHeaderFields = authHeaders(token)
-        let (data, _) = try await URLSession.shared.data(for: request)
-        return try JSONDecoder().decode(LibraryResponse.self, from: data)
+        let (data, _) = try await performRequest(request)
+        do {
+            return try JSONDecoder().decode(LibraryResponse.self, from: data)
+        } catch {
+            throw APIError.decodingError(error)
+        }
     }
 
     // MARK: - Ingest
@@ -41,8 +94,12 @@ class APIClient {
         request.httpMethod = "POST"
         request.allHTTPHeaderFields = authHeaders(token)
         request.httpBody = try JSONEncoder().encode(["url": urlString])
-        let (data, _) = try await URLSession.shared.data(for: request)
-        return try JSONDecoder().decode(IngestResponse.self, from: data)
+        let (data, _) = try await performRequest(request)
+        do {
+            return try JSONDecoder().decode(IngestResponse.self, from: data)
+        } catch {
+            throw APIError.decodingError(error)
+        }
     }
 
     // MARK: - Toggle Favorite
@@ -53,7 +110,7 @@ class APIClient {
         request.allHTTPHeaderFields = authHeaders(token)
         let body: [String: Any] = ["id": saveId, "is_favorite": isFavorite]
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
-        let _ = try await URLSession.shared.data(for: request)
+        let _ = try await performRequest(request)
     }
 
     // MARK: - Delete Save
@@ -64,7 +121,7 @@ class APIClient {
         var request = URLRequest(url: components.url!)
         request.httpMethod = "DELETE"
         request.allHTTPHeaderFields = authHeaders(token)
-        let _ = try await URLSession.shared.data(for: request)
+        let _ = try await performRequest(request)
     }
 
     // MARK: - Collections
@@ -72,8 +129,12 @@ class APIClient {
     func fetchCollections(token: String) async throws -> CollectionsResponse {
         var request = URLRequest(url: URL(string: "\(DopoConfig.libraryURL)/collections")!)
         request.allHTTPHeaderFields = authHeaders(token)
-        let (data, _) = try await URLSession.shared.data(for: request)
-        return try JSONDecoder().decode(CollectionsResponse.self, from: data)
+        let (data, _) = try await performRequest(request)
+        do {
+            return try JSONDecoder().decode(CollectionsResponse.self, from: data)
+        } catch {
+            throw APIError.decodingError(error)
+        }
     }
 
     func createCollection(token: String, name: String, emoji: String) async throws {
@@ -82,7 +143,7 @@ class APIClient {
         request.allHTTPHeaderFields = authHeaders(token)
         let body: [String: String] = ["name": name, "emoji": emoji]
         request.httpBody = try JSONEncoder().encode(body)
-        let _ = try await URLSession.shared.data(for: request)
+        let _ = try await performRequest(request)
     }
 
     func deleteCollection(token: String, collectionId: String) async throws {
@@ -91,7 +152,7 @@ class APIClient {
         var request = URLRequest(url: components.url!)
         request.httpMethod = "DELETE"
         request.allHTTPHeaderFields = authHeaders(token)
-        let _ = try await URLSession.shared.data(for: request)
+        let _ = try await performRequest(request)
     }
 
     func addSaveToCollection(token: String, collectionId: String, saveId: String) async throws {
@@ -100,7 +161,7 @@ class APIClient {
         request.allHTTPHeaderFields = authHeaders(token)
         let body: [String: String] = ["action": "add_save", "collection_id": collectionId, "save_id": saveId]
         request.httpBody = try JSONEncoder().encode(body)
-        let _ = try await URLSession.shared.data(for: request)
+        let _ = try await performRequest(request)
     }
 
     func removeSaveFromCollection(token: String, collectionId: String, saveId: String) async throws {
@@ -109,6 +170,6 @@ class APIClient {
         request.allHTTPHeaderFields = authHeaders(token)
         let body: [String: String] = ["action": "remove_save", "collection_id": collectionId, "save_id": saveId]
         request.httpBody = try JSONEncoder().encode(body)
-        let _ = try await URLSession.shared.data(for: request)
+        let _ = try await performRequest(request)
     }
 }

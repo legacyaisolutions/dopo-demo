@@ -4,6 +4,7 @@ struct CollectionsView: View {
     @EnvironmentObject var authManager: AuthManager
     @State private var collections: [DopoCollection] = []
     @State private var isLoading = true
+    @State private var errorMessage: String?
     @State private var showCreateSheet = false
     @State private var selectedCollection: DopoCollection?
 
@@ -15,6 +16,10 @@ struct CollectionsView: View {
                 if isLoading {
                     ProgressView()
                         .tint(.dopoAccent)
+                } else if let errorMessage {
+                    ErrorBanner(message: errorMessage) {
+                        Task { await loadCollections() }
+                    }
                 } else if collections.isEmpty {
                     VStack(spacing: 12) {
                         Text("📁").font(.system(size: 48)).opacity(0.5)
@@ -27,24 +32,28 @@ struct CollectionsView: View {
                     }
                 } else {
                     List {
-                        // Owned collections
                         let owned = collections.filter { $0.isOwner == true }
                         if !owned.isEmpty {
                             Section("My Collections") {
                                 ForEach(owned) { coll in
                                     CollectionRow(collection: coll)
-                                        .onTapGesture { selectedCollection = coll }
+                                        .onTapGesture {
+                                            HapticManager.impact(.light)
+                                            selectedCollection = coll
+                                        }
                                 }
                             }
                         }
 
-                        // Shared collections
                         let shared = collections.filter { $0.isOwner == false }
                         if !shared.isEmpty {
                             Section("Shared With Me") {
                                 ForEach(shared) { coll in
                                     CollectionRow(collection: coll)
-                                        .onTapGesture { selectedCollection = coll }
+                                        .onTapGesture {
+                                            HapticManager.impact(.light)
+                                            selectedCollection = coll
+                                        }
                                 }
                             }
                         }
@@ -56,7 +65,10 @@ struct CollectionsView: View {
             .navigationTitle("Collections")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                    Button(action: { showCreateSheet = true }) {
+                    Button(action: {
+                        HapticManager.impact(.medium)
+                        showCreateSheet = true
+                    }) {
                         Image(systemName: "plus")
                             .foregroundColor(.dopoAccent)
                     }
@@ -81,10 +93,16 @@ struct CollectionsView: View {
             let response = try await APIClient.shared.fetchCollections(token: token)
             withAnimation {
                 collections = response.collections
+                errorMessage = nil
                 isLoading = false
             }
         } catch {
-            isLoading = false
+            withAnimation {
+                if collections.isEmpty {
+                    errorMessage = error.localizedDescription
+                }
+                isLoading = false
+            }
         }
     }
 }
@@ -148,11 +166,13 @@ struct CreateCollectionView: View {
                 Color.dopoBg.ignoresSafeArea()
 
                 VStack(spacing: 20) {
-                    // Emoji picker
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 10) {
                             ForEach(emojiOptions, id: \.self) { e in
-                                Button(action: { emoji = e }) {
+                                Button(action: {
+                                    HapticManager.selection()
+                                    emoji = e
+                                }) {
                                     Text(e)
                                         .font(.system(size: 28))
                                         .padding(8)
@@ -186,6 +206,7 @@ struct CreateCollectionView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Create") {
                         isCreating = true
+                        HapticManager.notification(.success)
                         Task {
                             guard let token = authManager.accessToken else { return }
                             try? await APIClient.shared.createCollection(token: token, name: name, emoji: emoji)
@@ -206,6 +227,7 @@ struct CollectionDetailView: View {
     let collection: DopoCollection
     @State private var saves: [Save] = []
     @State private var isLoading = true
+    @State private var errorMessage: String?
     @State private var selectedSave: Save?
     @Environment(\.dismiss) private var dismiss
 
@@ -215,7 +237,6 @@ struct CollectionDetailView: View {
                 Color.dopoBg.ignoresSafeArea()
 
                 VStack(spacing: 0) {
-                    // Header info
                     VStack(spacing: 6) {
                         Text(collection.displayEmoji)
                             .font(.system(size: 44))
@@ -245,6 +266,10 @@ struct CollectionDetailView: View {
                         Spacer()
                         ProgressView().tint(.dopoAccent)
                         Spacer()
+                    } else if let errorMessage {
+                        ErrorBanner(message: errorMessage) {
+                            Task { await loadSaves() }
+                        }
                     } else if saves.isEmpty {
                         Spacer()
                         Text("No saves in this collection yet")
@@ -255,6 +280,7 @@ struct CollectionDetailView: View {
                             LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 12)], spacing: 12) {
                                 ForEach(saves) { save in
                                     SaveCard(save: save, onTap: {
+                                        HapticManager.impact(.light)
                                         selectedSave = save
                                     }, onFavorite: {}, onDelete: {})
                                 }
@@ -285,10 +311,14 @@ struct CollectionDetailView: View {
             let response = try await APIClient.shared.fetchLibrary(token: token, collectionId: collection.id)
             withAnimation {
                 saves = response.saves
+                errorMessage = nil
                 isLoading = false
             }
         } catch {
-            isLoading = false
+            withAnimation {
+                errorMessage = error.localizedDescription
+                isLoading = false
+            }
         }
     }
 }
