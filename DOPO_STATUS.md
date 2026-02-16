@@ -49,6 +49,7 @@ Dopo is a social curation platform for saved social media content — "Pinterest
 - [x] Collaborator management — invite by email, auto-accept existing users, remove collaborators
 - [x] Collaborator access — editors can add/remove saves from shared collections
 - [x] Cross-user collection viewing — collaborators see owner's saves in shared collections
+- [x] View-only vs Editor roles — role selector on invite, role badges, role switching, UI enforcement
 
 ### AI Metadata Extraction (Complete — v7)
 - [x] `ai-enrich` edge function (v7) with Gemini 2.0 Flash integration
@@ -68,7 +69,8 @@ Dopo is a social curation platform for saved social media content — "Pinterest
 - [x] Collections UI — create, delete, filter by collection, add/remove saves
 - [x] Share & Collaborate UI — public toggle, shareable link with copy, collaborator invite/remove
 - [x] Shared collection view — public read-only page for anyone with the link
-- [x] Visual indicators on collection chips (🔗 public, 👥 shared with you)
+- [x] Visual indicators on collection chips (🔗 public, ✏️ editor, 👁️ viewer)
+- [x] Role-based UI enforcement — viewers see notice bar, can't add saves or manage collection
 - [x] Deployed to Vercel: dopo-demo.vercel.app
 - [x] GitHub repo: legacyaisolutions/dopo-demo (push access configured)
 
