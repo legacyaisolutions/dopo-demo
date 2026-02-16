@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <!-- X/Twitter: Black circle with white X lettermark -->
+  <circle cx="60" cy="60" r="58" fill="#000000"/>
+  <!-- Official X logo shape: two crossing strokes -->
+  <!-- Top-left to bottom-right (thicker) -->
+  <polygon points="32,30 48,30 90,90 74,90" fill="#FFFFFF"/>
+  <!-- Top-right to bottom-left (thinner) -->
+  <polygon points="82,30 90,30 38,90 28,90" fill="#FFFFFF"/>
+</svg>
