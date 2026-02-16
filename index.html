@@ -280,6 +280,12 @@
     padding: 8px 12px; color: var(--text); font-size: 13px; font-family: 'DM Sans', sans-serif; outline: none;
   }
   .collab-invite-input:focus { border-color: var(--accent); }
+  .collab-role-select {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 10px; color: var(--text); font-size: 13px; font-family: 'DM Sans', sans-serif;
+    outline: none; cursor: pointer; min-width: 100px; appearance: auto;
+  }
+  .collab-role-select:focus { border-color: var(--accent); }
   .collab-invite-btn {
     background: var(--surface); border: 1px solid var(--accent); color: var(--accent); border-radius: 8px;
     padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif;
@@ -287,6 +293,23 @@
   }
   .collab-invite-btn:hover { background: var(--accent-glow); }
   .collab-status { font-size: 12px; margin-top: 6px; min-height: 18px; }
+  .collab-role-badge {
+    font-size: 10px; padding: 2px 8px; border-radius: 10px; text-transform: uppercase;
+    letter-spacing: 0.5px; font-weight: 600;
+  }
+  .collab-role-badge.editor { color: var(--accent); background: var(--accent-glow); }
+  .collab-role-badge.viewer { color: var(--text-dim); background: rgba(90,90,114,0.15); }
+  .collab-role-change {
+    background: none; border: 1px solid var(--border); color: var(--text-dim); cursor: pointer;
+    font-size: 10px; padding: 2px 8px; border-radius: 10px; font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s;
+  }
+  .collab-role-change:hover { border-color: var(--accent); color: var(--accent); }
+  .viewer-notice {
+    background: rgba(90,90,114,0.1); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 14px; font-size: 13px; color: var(--text-muted); margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
   @media (max-width: 600px) { .cards-grid { grid-template-columns: 1fr; } .ingest-bar { flex-direction: column; } .toolbar { flex-direction: column; } .search-input { min-width: 100%; } }
   @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
   .card { animation: fadeInUp 0.3s ease-out both; }
@@ -434,6 +457,10 @@
       <div id="collabList" class="collab-list"></div>
       <div class="collab-invite-row">
         <input id="collabEmail" class="collab-invite-input" type="email" placeholder="Email address" onkeydown="if(event.key==='Enter')inviteCollaborator()" />
+        <select id="collabRoleSelect" class="collab-role-select">
+          <option value="editor">Can edit</option>
+          <option value="viewer">View only</option>
+        </select>
         <button class="collab-invite-btn" onclick="inviteCollaborator()">Invite</button>
       </div>
       <div id="collabStatus" class="collab-status"></div>
@@ -455,6 +482,7 @@ let isSignUp = false;
 let collections = [];
 let currentSaves = [];
 let addToCollSaveId = null;
+let activeCollectionRole = null; // null = own collection or "all", "editor", "viewer"
 
 // SVG icons for each platform (used in cards and placeholders)
 const platformSVG = {
@@ -662,7 +690,7 @@ function renderCard(save) {
       <div class="card-meta">
         <span class="card-date">${dateStr}</span>
         <div class="card-actions">
-          <button class="card-action" onclick="openAddToCollModal('${save.id}')" title="Add to collection">📁</button>
+          ${activeCollectionRole !== 'viewer' ? `<button class="card-action" onclick="openAddToCollModal('${save.id}')" title="Add to collection">📁</button>` : ''}
           <button class="card-action ${save.is_favorite?'favorited':''}" onclick="toggleFav('${save.id}',${!save.is_favorite})" title="Favorite">${save.is_favorite?"★":"☆"}</button>
           <a class="card-link" href="${esc(save.canonical_url||save.url)}" target="_blank" rel="noopener">Open ↗</a>
         </div>
@@ -715,19 +743,67 @@ function renderCollectionsBar() {
   bar.style.display = "flex";
   chips.innerHTML = collections.map(c => {
     const publicIcon = c.is_public ? ' 🔗' : '';
-    const sharedIcon = (!c.is_owner && c.role) ? ' 👥' : '';
+    let sharedIcon = '';
+    if (!c.is_owner && c.role === 'editor') sharedIcon = ' ✏️';
+    else if (!c.is_owner && c.role === 'viewer') sharedIcon = ' 👁️';
     return `<button class="coll-chip ${currentCollection === c.id ? 'active' : ''}" data-coll="${c.id}" onclick="setCollection('${c.id}')">${c.emoji || '📁'} ${esc(c.name)}${publicIcon}${sharedIcon} <span class="coll-count">${c.save_count}</span></button>`;
   }).join("");
   // Update "All Saves" active state
   document.querySelector('[data-coll="all"]').className = `coll-chip ${currentCollection === 'all' ? 'active' : ''}`;
-  // Show delete button when a specific collection is selected
-  manageBar.style.display = (currentCollection !== "all") ? "flex" : "none";
+  // Show manage bar when a specific collection is selected
+  if (currentCollection !== "all") {
+    manageBar.style.display = "flex";
+    const coll = collections.find(c => c.id === currentCollection);
+    const isOwner = coll?.is_owner;
+    // Share button: only visible to owner
+    const shareBtn = manageBar.querySelector('.share-btn');
+    const deleteBtn = manageBar.querySelector('.coll-manage-btn:not(.share-btn)');
+    if (shareBtn) shareBtn.style.display = isOwner ? 'inline-block' : 'none';
+    if (deleteBtn) deleteBtn.style.display = isOwner ? 'inline-block' : 'none';
+  } else {
+    manageBar.style.display = "none";
+  }
 }
 
 function setCollection(collId) {
   currentCollection = collId;
+  // Determine the user's role for this collection
+  if (collId === "all") {
+    activeCollectionRole = null;
+  } else {
+    const coll = collections.find(c => c.id === collId);
+    if (coll && !coll.is_owner) {
+      activeCollectionRole = coll.role || "viewer";
+    } else {
+      activeCollectionRole = null; // owner — full access
+    }
+  }
   renderCollectionsBar();
+  enforceRoleUI();
   loadLibrary(document.getElementById("searchInput").value.trim());
+}
+
+function enforceRoleUI() {
+  const isViewOnly = activeCollectionRole === "viewer";
+  const isSharedCollection = activeCollectionRole !== null;
+  // Ingest bar: hide for view-only
+  const ingestSection = document.querySelector(".ingest-section");
+  if (ingestSection) ingestSection.style.display = isViewOnly ? "none" : "block";
+  // Remove or add viewer notice
+  let notice = document.getElementById("viewerNotice");
+  if (isViewOnly) {
+    if (!notice) {
+      notice = document.createElement("div");
+      notice.id = "viewerNotice";
+      notice.className = "viewer-notice";
+      notice.innerHTML = '👁️ <span>You have <strong>view-only</strong> access to this collection</span>';
+      const statsBar = document.getElementById("statsBar");
+      statsBar.parentNode.insertBefore(notice, statsBar);
+    }
+    notice.style.display = "flex";
+  } else {
+    if (notice) notice.style.display = "none";
+  }
 }
 
 function openCreateCollectionModal() {
@@ -779,19 +855,18 @@ function openAddToCollModal(saveId) {
   addToCollSaveId = saveId;
   const modal = document.getElementById("addToCollModal");
   const list = document.getElementById("addToCollList");
-  if (collections.length === 0) {
+  // Filter to collections user can edit (owned or editor role)
+  const editableColls = collections.filter(c => c.is_owner || c.role === 'editor');
+  if (editableColls.length === 0) {
     list.innerHTML = `<div style="color:var(--text-dim);padding:16px;text-align:center;">No collections yet. Create one first!</div>`;
   } else {
-    // Find which collections this save belongs to
-    const grid = document.getElementById("cardsGrid");
-    list.innerHTML = collections.map(c => {
-      // We check membership from the save's collection_ids if available
+    list.innerHTML = editableColls.map(c => {
+      const sharedLabel = !c.is_owner ? ' <span style="font-size:10px;color:var(--text-dim);">(shared)</span>' : '';
       return `<button class="card-coll-dropdown-item" id="coll-toggle-${c.id}" onclick="toggleSaveInCollection('${saveId}','${c.id}', this)">
         <span class="coll-check" id="coll-check-${c.id}">–</span>
-        ${c.emoji || '📁'} ${esc(c.name)}
+        ${c.emoji || '📁'} ${esc(c.name)}${sharedLabel}
       </button>`;
     }).join("");
-    // Check membership asynchronously
     checkMemberships(saveId);
   }
   modal.classList.remove("hidden");
@@ -894,16 +969,24 @@ async function loadCollaborators(collId) {
     });
     const data = await resp.json();
     const collabs = data.collaborators || [];
+    const isOwner = data.is_owner;
     if (collabs.length === 0) {
       list.innerHTML = `<div style="color:var(--text-dim);font-size:13px;padding:8px 0;">No collaborators yet</div>`;
     } else {
-      list.innerHTML = collabs.map(c => `<div class="collab-row">
-        <span class="collab-email">${esc(c.email || c.invited_email || 'unknown')}</span>
-        <span style="display:flex;align-items:center;gap:8px;">
-          <span class="collab-role">${c.role}${!c.accepted ? ' (pending)' : ''}</span>
-          <button class="collab-remove" onclick="removeCollaborator('${c.id}')" title="Remove">&times;</button>
-        </span>
-      </div>`).join("");
+      list.innerHTML = collabs.map(c => {
+        const roleLabel = c.role === 'viewer' ? 'View only' : 'Can edit';
+        const pendingLabel = !c.accepted ? ' (pending)' : '';
+        const toggleRole = c.role === 'viewer' ? 'editor' : 'viewer';
+        const toggleLabel = c.role === 'viewer' ? 'Make editor' : 'Make viewer';
+        return `<div class="collab-row">
+          <span class="collab-email">${esc(c.email || c.invited_email || 'unknown')}</span>
+          <span style="display:flex;align-items:center;gap:6px;">
+            <span class="collab-role-badge ${c.role}">${roleLabel}${pendingLabel}</span>
+            ${isOwner ? `<button class="collab-role-change" onclick="changeCollabRole('${c.id}','${c.email || c.invited_email}','${toggleRole}')" title="${toggleLabel}">${toggleLabel}</button>` : ''}
+            ${isOwner ? `<button class="collab-remove" onclick="removeCollaborator('${c.id}')" title="Remove">&times;</button>` : ''}
+          </span>
+        </div>`;
+      }).join("");
     }
   } catch (e) {
     list.innerHTML = `<div style="color:var(--text-dim);font-size:13px;padding:8px 0;">No collaborators yet</div>`;
@@ -912,8 +995,10 @@ async function loadCollaborators(collId) {
 
 async function inviteCollaborator() {
   const emailInput = document.getElementById("collabEmail");
+  const roleSelect = document.getElementById("collabRoleSelect");
   const status = document.getElementById("collabStatus");
   const email = emailInput.value.trim();
+  const role = roleSelect.value;
   if (!email || !shareCollectionId) return;
   status.textContent = "Inviting...";
   status.style.color = "var(--text-muted)";
@@ -921,11 +1006,12 @@ async function inviteCollaborator() {
     const resp = await fetch(`${SUPABASE_URL}/functions/v1/library/collaborators`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}`, apikey: SUPABASE_ANON_KEY },
-      body: JSON.stringify({ collection_id: shareCollectionId, email, role: "editor" }),
+      body: JSON.stringify({ collection_id: shareCollectionId, email, role }),
     });
     const data = await resp.json();
     if (resp.ok) {
-      status.textContent = data.status === "invited" ? `${email} added as editor!` : `Invite saved — ${email} will get access when they sign up`;
+      const roleLabel = role === "viewer" ? "viewer" : "editor";
+      status.textContent = data.status === "invited" ? `${email} added as ${roleLabel}!` : `Invite saved — ${email} will get access as ${roleLabel} when they sign up`;
       status.style.color = "var(--success)";
       emailInput.value = "";
       loadCollaborators(shareCollectionId);
@@ -949,6 +1035,25 @@ async function removeCollaborator(collabId) {
     });
     loadCollaborators(shareCollectionId);
   } catch (e) { console.error("Failed to remove collaborator", e); }
+}
+
+async function changeCollabRole(collabId, email, newRole) {
+  if (!shareCollectionId) return;
+  const status = document.getElementById("collabStatus");
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/library/collaborators`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}`, apikey: SUPABASE_ANON_KEY },
+      body: JSON.stringify({ collection_id: shareCollectionId, email, role: newRole }),
+    });
+    if (resp.ok) {
+      const label = newRole === 'viewer' ? 'view only' : 'editor';
+      status.textContent = `${email} changed to ${label}`;
+      status.style.color = "var(--success)";
+      loadCollaborators(shareCollectionId);
+      setTimeout(() => { status.textContent = ""; }, 3000);
+    }
+  } catch (e) { console.error("Failed to change role", e); }
 }
 
 // ─── SHARED VIEW (public collection via URL param) ───
