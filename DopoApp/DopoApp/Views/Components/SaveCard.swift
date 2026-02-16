@@ -74,8 +74,8 @@ struct SaveCard: View {
                 .frame(height: 120)
                 .clipped()
 
-                // Body
-                VStack(alignment: .leading, spacing: 6) {
+                // Body — fixed height so all cards align in the grid
+                VStack(alignment: .leading, spacing: 4) {
                     // Title
                     Text(save.displayTitle)
                         .font(.system(size: 13, weight: .medium))
@@ -101,7 +101,7 @@ struct SaveCard: View {
                     // Tags
                     if let tags = save.aiTags, !tags.isEmpty {
                         HStack(spacing: 4) {
-                            ForEach(tags.prefix(3), id: \.self) { tag in
+                            ForEach(tags.prefix(2), id: \.self) { tag in
                                 Text("#\(tag)")
                                     .font(.system(size: 9))
                                     .foregroundColor(.dopoTextDim)
@@ -113,7 +113,9 @@ struct SaveCard: View {
                         }
                     }
 
-                    // Bottom row
+                    Spacer(minLength: 0)
+
+                    // Bottom row — pinned to bottom
                     HStack {
                         Text(save.displayDate)
                             .font(.dopoCaption)
@@ -135,9 +137,9 @@ struct SaveCard: View {
                         }
                         .buttonStyle(.plain)
                     }
-                    .padding(.top, 4)
                 }
-                .padding(12)
+                .padding(10)
+                .frame(height: 120)
             }
             .background(Color.dopoSurface)
             .cornerRadius(12)
