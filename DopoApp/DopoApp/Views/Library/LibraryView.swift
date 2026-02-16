@@ -15,63 +15,60 @@ struct LibraryView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                Color.dopoBg.ignoresSafeArea()
-
-                VStack(spacing: 0) {
-                    // Platform filter pills
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(platforms, id: \.self) { platform in
-                                PlatformPill(
-                                    platform: platform,
-                                    isSelected: selectedPlatform == platform
-                                ) {
-                                    HapticManager.selection()
-                                    selectedPlatform = platform
-                                    Task { await loadSaves() }
-                                }
+            VStack(spacing: 0) {
+                // Platform filter pills
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(platforms, id: \.self) { platform in
+                            PlatformPill(
+                                platform: platform,
+                                isSelected: selectedPlatform == platform
+                            ) {
+                                HapticManager.selection()
+                                selectedPlatform = platform
+                                Task { await loadSaves() }
                             }
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 10)
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                }
 
-                    Divider().background(Color.dopoBorder)
+                Divider().background(Color.dopoBorder)
 
-                    // Content
-                    if isLoading {
-                        SkeletonGrid()
-                    } else if let errorMessage {
-                        ErrorBanner(message: errorMessage) {
-                            Task { await loadSaves() }
-                        }
-                    } else if saves.isEmpty {
-                        EmptyLibraryView(hasSearch: !searchText.isEmpty)
-                    } else {
-                        ScrollView {
-                            LazyVGrid(columns: [
-                                GridItem(.adaptive(minimum: 160), spacing: 12)
-                            ], spacing: 12) {
-                                ForEach(saves) { save in
-                                    SaveCard(save: save, onTap: {
-                                        HapticManager.impact(.light)
-                                        selectedSave = save
-                                    }, onFavorite: {
-                                        HapticManager.impact(.light)
-                                        Task { await toggleFavorite(save) }
-                                    }, onDelete: {
-                                        HapticManager.impact(.medium)
-                                        saveToDelete = save
-                                        showDeleteConfirm = true
-                                    })
-                                }
+                // Content
+                if isLoading {
+                    SkeletonGrid()
+                } else if let errorMessage {
+                    ErrorBanner(message: errorMessage) {
+                        Task { await loadSaves() }
+                    }
+                } else if saves.isEmpty {
+                    EmptyLibraryView(hasSearch: !searchText.isEmpty)
+                } else {
+                    ScrollView {
+                        LazyVGrid(columns: [
+                            GridItem(.adaptive(minimum: 160), spacing: 12)
+                        ], spacing: 12) {
+                            ForEach(saves) { save in
+                                SaveCard(save: save, onTap: {
+                                    HapticManager.impact(.light)
+                                    selectedSave = save
+                                }, onFavorite: {
+                                    HapticManager.impact(.light)
+                                    Task { await toggleFavorite(save) }
+                                }, onDelete: {
+                                    HapticManager.impact(.medium)
+                                    saveToDelete = save
+                                    showDeleteConfirm = true
+                                })
                             }
-                            .padding(16)
                         }
+                        .padding(16)
                     }
                 }
             }
+            .background(Color.dopoBg.ignoresSafeArea())
             .navigationTitle("")
             .toolbar {
                 ToolbarItem(placement: .principal) {

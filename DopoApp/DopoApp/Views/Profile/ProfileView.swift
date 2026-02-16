@@ -7,6 +7,7 @@ struct ProfileView: View {
     @State private var isLoading = true
     @State private var errorMessage: String?
     @State private var showLogoutConfirm = false
+    @State private var showAbout = false
 
     var body: some View {
         NavigationStack {
@@ -69,20 +70,21 @@ struct ProfileView: View {
                             .padding(.horizontal, 20)
 
                             VStack(spacing: 0) {
-                                ProfileRow(icon: "bell.fill", label: "Notifications", color: .dopoAccent) {
+                                ProfileRow(icon: "bell.fill", label: "Notifications", color: .dopoAccent, comingSoon: true) {
                                     HapticManager.impact(.light)
                                 }
                                 Divider().background(Color.dopoBorder).padding(.leading, 52)
-                                ProfileRow(icon: "paintbrush.fill", label: "Appearance", color: .purple) {
+                                ProfileRow(icon: "paintbrush.fill", label: "Appearance", color: .purple, comingSoon: true) {
                                     HapticManager.impact(.light)
                                 }
                                 Divider().background(Color.dopoBorder).padding(.leading, 52)
-                                ProfileRow(icon: "questionmark.circle.fill", label: "Help & Support", color: .blue) {
+                                ProfileRow(icon: "questionmark.circle.fill", label: "Help & Support", color: .blue, comingSoon: true) {
                                     HapticManager.impact(.light)
                                 }
                                 Divider().background(Color.dopoBorder).padding(.leading, 52)
                                 ProfileRow(icon: "info.circle.fill", label: "About Dopo", color: .dopoTextMuted) {
                                     HapticManager.impact(.light)
+                                    showAbout = true
                                 }
                             }
                             .background(Color.dopoSurface)
@@ -133,6 +135,11 @@ struct ProfileView: View {
                 }
             } message: {
                 Text("Are you sure you want to sign out?")
+            }
+            .alert("About Dopo", isPresented: $showAbout) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text("dopo v1.0.0 beta\n\nYour best finds, all in one place.\n\nBuilt with love by Legacy AI Solutions.")
             }
             .task { await loadStats() }
         }
@@ -190,6 +197,7 @@ struct ProfileRow: View {
     let icon: String
     let label: String
     let color: Color
+    var comingSoon: Bool = false
     let action: () -> Void
 
     var body: some View {
@@ -206,9 +214,19 @@ struct ProfileRow: View {
 
                 Spacer()
 
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12))
-                    .foregroundColor(.dopoTextDim)
+                if comingSoon {
+                    Text("Coming Soon")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(.dopoTextDim)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(Color.dopoSurfaceHover)
+                        .cornerRadius(4)
+                } else {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12))
+                        .foregroundColor(.dopoTextDim)
+                }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 14)

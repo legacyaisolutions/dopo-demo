@@ -1,5 +1,5 @@
 import SwiftUI
-import WebKit
+import UIKit
 
 struct SaveDetailView: View {
     let save: Save
@@ -13,13 +13,11 @@ struct SaveDetailView: View {
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
-                        // In-app content viewer
-                        InAppContentViewer(save: save)
-                            .frame(height: videoPlayerHeight)
-                            .cornerRadius(0)
+                        // Thumbnail hero area
+                        ThumbnailHero(save: save)
 
                         VStack(alignment: .leading, spacing: 16) {
-                            // Platform + type
+                            // Platform + type badge
                             HStack(spacing: 6) {
                                 Image(systemName: save.platformColor.iconName)
                                     .font(.system(size: 12))
@@ -59,13 +57,38 @@ struct SaveDetailView: View {
                                 .font(.system(size: 14))
                             }
 
+                            // Open Original — prominent CTA
+                            Button(action: {
+                                HapticManager.impact(.medium)
+                                if let url = URL(string: save.canonicalUrl ?? save.url) {
+                                    UIApplication.shared.open(url)
+                                }
+                            }) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "safari")
+                                        .font(.system(size: 16))
+                                    Text("Open on \(save.platformColor.label)")
+                                        .font(.system(size: 15, weight: .semibold))
+                                }
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 48)
+                                .foregroundColor(.white)
+                                .background(Color.platformColor(save.platform))
+                                .cornerRadius(12)
+                            }
+
                             // AI Summary
                             if let summary = save.aiSummary, !summary.isEmpty {
                                 VStack(alignment: .leading, spacing: 6) {
-                                    Text("AI SUMMARY")
-                                        .font(.system(size: 10, weight: .semibold))
-                                        .foregroundColor(.dopoTextDim)
-                                        .tracking(1)
+                                    HStack(spacing: 4) {
+                                        Image(systemName: "sparkles")
+                                            .font(.system(size: 10))
+                                            .foregroundColor(.dopoAccent)
+                                        Text("AI SUMMARY")
+                                            .font(.system(size: 10, weight: .semibold))
+                                            .foregroundColor(.dopoTextDim)
+                                            .tracking(1)
+                                    }
                                     Text(summary)
                                         .font(.system(size: 14))
                                         .foregroundColor(.dopoTextMuted)
@@ -89,15 +112,15 @@ struct SaveDetailView: View {
                                 }
                             }
 
-                            // Action buttons
+                            // Action row
                             HStack(spacing: 12) {
                                 ActionButton(icon: "square.and.arrow.up", label: "Share") {
+                                    HapticManager.impact(.light)
                                     showShareSheet = true
                                 }
-                                ActionButton(icon: "safari", label: "Open Original") {
-                                    if let url = URL(string: save.canonicalUrl ?? save.url) {
-                                        UIApplication.shared.open(url)
-                                    }
+                                ActionButton(icon: "doc.on.doc", label: "Copy Link") {
+                                    HapticManager.notification(.success)
+                                    UIPasteboard.general.string = save.canonicalUrl ?? save.url
                                 }
                             }
                         }
@@ -119,70 +142,82 @@ struct SaveDetailView: View {
             }
         }
     }
-
-    private var videoPlayerHeight: CGFloat {
-        let isVideo = save.contentType?.lowercased().contains("video") == true
-            || save.platform == "youtube"
-            || save.platform == "tiktok"
-        return isVideo ? 320 : 240
-    }
 }
 
-// MARK: - In-App Content Viewer (WebView-based)
+// MARK: - Thumbnail Hero
 
-struct InAppContentViewer: UIViewRepresentable {
+struct ThumbnailHero: View {
     let save: Save
 
-    func makeUIView(context: Context) -> WKWebView {
-        let config = WKWebViewConfiguration()
-        config.allowsInlineMediaPlayback = true
-        config.mediaTypesRequiringUserActionForPlayback = []
-        config.allowsPictureInPictureMediaPlayback = true
+    var body: some View {
+        ZStack {
+            // Background
+            Color.dopoSurface
 
-        let webView = WKWebView(frame: .zero, configuration: config)
-        webView.isOpaque = false
-        webView.backgroundColor = UIColor(Color.dopoSurface)
-        webView.scrollView.isScrollEnabled = false
-        return webView
-    }
+            if let thumbUrl = save.thumbnailUrl, let url = URL(string: thumbUrl) {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    case .failure:
+                        placeholderView
+                    case .empty:
+                        ProgressView()
+                            .tint(.dopoAccent)
+                    @unknown default:
+                        placeholderView
+                    }
+                }
+            } else {
+                placeholderView
+            }
 
-    func updateUIView(_ webView: WKWebView, context: Context) {
-        let embedURL = embeddableURL
-        if let url = URL(string: embedURL) {
-            let request = URLRequest(url: url)
-            webView.load(request)
-        }
-    }
+            // Play icon overlay for video content
+            if isVideoContent {
+                Circle()
+                    .fill(.black.opacity(0.5))
+                    .frame(width: 56, height: 56)
+                    .overlay(
+                        Image(systemName: "play.fill")
+                            .font(.system(size: 22))
+                            .foregroundColor(.white)
+                            .offset(x: 2)
+                    )
+            }
 
-    private var embeddableURL: String {
-        let urlStr = save.canonicalUrl ?? save.url
-
-        // YouTube embed
-        if save.platform == "youtube" {
-            if let videoId = extractYouTubeId(from: urlStr) {
-                return "https://www.youtube.com/embed/\(videoId)?autoplay=0&playsinline=1&rel=0"
+            // Gradient overlay at bottom for visual depth
+            VStack {
+                Spacer()
+                LinearGradient(
+                    colors: [.clear, Color.dopoBg.opacity(0.8)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(height: 40)
             }
         }
-
-        // For other platforms, load in iframe wrapper
-        return urlStr
+        .frame(height: isVideoContent ? 260 : 200)
+        .clipped()
     }
 
-    private func extractYouTubeId(from urlString: String) -> String? {
-        // Handle youtu.be/ID
-        if urlString.contains("youtu.be/") {
-            return urlString.components(separatedBy: "youtu.be/").last?.components(separatedBy: "?").first
+    private var isVideoContent: Bool {
+        save.contentType?.lowercased().contains("video") == true
+            || save.platform == "youtube"
+            || save.platform == "tiktok"
+    }
+
+    private var placeholderView: some View {
+        VStack(spacing: 10) {
+            Image(systemName: save.platformColor.iconName)
+                .font(.system(size: 36))
+                .foregroundColor(Color.platformColor(save.platform).opacity(0.6))
+            Text(save.platformColor.label)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.dopoTextDim)
         }
-        // Handle youtube.com/watch?v=ID
-        if let components = URLComponents(string: urlString),
-           let videoId = components.queryItems?.first(where: { $0.name == "v" })?.value {
-            return videoId
-        }
-        // Handle youtube.com/shorts/ID
-        if urlString.contains("/shorts/") {
-            return urlString.components(separatedBy: "/shorts/").last?.components(separatedBy: "?").first
-        }
-        return nil
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 

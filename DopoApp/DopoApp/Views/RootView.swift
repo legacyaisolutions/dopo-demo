@@ -39,7 +39,7 @@ struct RootView: View {
                             .opacity(splashOpacity)
 
                         // Tagline fades in slightly after
-                        Text("YOUR CONTENT LIBRARY")
+                        Text("YOUR BEST FINDS, ALL IN ONE PLACE")
                             .font(.system(size: 10, weight: .medium, design: .monospaced))
                             .foregroundColor(.dopoTextDim)
                             .tracking(3)

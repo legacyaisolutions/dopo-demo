@@ -25,7 +25,7 @@ struct AuthView: View {
                                 endPoint: .bottomTrailing
                             )
                         )
-                    Text("YOUR CONTENT LIBRARY")
+                    Text("YOUR BEST FINDS, ALL IN ONE PLACE")
                         .font(.system(size: 11, weight: .regular, design: .monospaced))
                         .foregroundColor(.dopoTextDim)
                         .tracking(2)
