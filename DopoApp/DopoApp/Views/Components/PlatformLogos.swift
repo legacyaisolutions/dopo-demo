@@ -112,7 +112,7 @@ struct InstagramLogo: View {
     }
 }
 
-// MARK: - TikTok (Music note "d" shape)
+// MARK: - TikTok (Musical note with 3-color offset)
 struct TikTokLogo: View {
     let size: CGFloat
 
@@ -122,63 +122,53 @@ struct TikTokLogo: View {
                 .fill(.black)
                 .frame(width: size, height: size)
 
-            // Offset colored layers for the 3D effect
-            TikTokNoteShape()
-                .fill(Color(red: 0.14, green: 0.89, blue: 0.82)) // cyan
-                .frame(width: size * 0.5, height: size * 0.65)
-                .offset(x: 1, y: -1)
+            // Three overlapping layers: cyan, red, white (center)
+            Canvas { context, canvasSize in
+                let s = canvasSize.width
 
-            TikTokNoteShape()
-                .fill(Color(red: 0.99, green: 0.18, blue: 0.33)) // red
-                .frame(width: size * 0.5, height: size * 0.65)
-                .offset(x: -1, y: 1)
+                func drawNote(ctx: inout GraphicsContext, color: Color, dx: CGFloat, dy: CGFloat) {
+                    // Stem (vertical bar, right side)
+                    let stemW = s * 0.13
+                    let stemH = s * 0.48
+                    let stemX = s * 0.52 + dx
+                    let stemY = s * 0.16 + dy
+                    let stemRect = CGRect(x: stemX, y: stemY, width: stemW, height: stemH)
+                    ctx.fill(Path(roundedRect: stemRect, cornerRadius: stemW * 0.2), with: .color(color))
 
-            TikTokNoteShape()
-                .fill(.white)
-                .frame(width: size * 0.5, height: size * 0.65)
+                    // Note head (ellipse at bottom-left of stem)
+                    let headW = s * 0.26
+                    let headH = s * 0.19
+                    let headX = stemX - headW * 0.55
+                    let headY = stemY + stemH - headH * 0.45
+                    ctx.fill(Path(ellipseIn: CGRect(x: headX, y: headY, width: headW, height: headH)), with: .color(color))
+
+                    // Wave/flag at top (curved piece going right from top of stem)
+                    var wave = Path()
+                    let waveTop = stemY
+                    wave.move(to: CGPoint(x: stemX + stemW, y: waveTop))
+                    wave.addQuadCurve(
+                        to: CGPoint(x: s * 0.72 + dx, y: waveTop + s * 0.12),
+                        control: CGPoint(x: s * 0.72 + dx, y: waveTop - s * 0.02)
+                    )
+                    wave.addLine(to: CGPoint(x: s * 0.72 + dx, y: waveTop + s * 0.22))
+                    wave.addQuadCurve(
+                        to: CGPoint(x: stemX + stemW, y: waveTop + s * 0.12),
+                        control: CGPoint(x: s * 0.62 + dx, y: waveTop + s * 0.16)
+                    )
+                    wave.closeSubpath()
+                    ctx.fill(wave, with: .color(color))
+                }
+
+                // Cyan layer (offset up-right)
+                drawNote(ctx: &context, color: Color(red: 0.14, green: 0.89, blue: 0.82), dx: 1.2, dy: -1.2)
+                // Red layer (offset down-left)
+                drawNote(ctx: &context, color: Color(red: 0.99, green: 0.18, blue: 0.33), dx: -1.2, dy: 1.2)
+                // White center layer
+                drawNote(ctx: &context, color: .white, dx: 0, dy: 0)
+            }
+            .frame(width: size, height: size)
         }
         .frame(width: size, height: size)
-    }
-}
-
-struct TikTokNoteShape: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let w = rect.width
-        let h = rect.height
-
-        // Musical note "d" shape
-        // Stem
-        let stemX = w * 0.6
-        let stemTop = h * 0.0
-        let stemBottom = h * 0.72
-        let stemWidth = w * 0.18
-
-        path.addRoundedRect(
-            in: CGRect(x: stemX, y: stemTop, width: stemWidth, height: stemBottom),
-            cornerSize: CGSize(width: stemWidth * 0.3, height: stemWidth * 0.3)
-        )
-
-        // Note head (circle at bottom-left of stem)
-        let noteR = w * 0.22
-        let noteX = stemX - noteR * 0.5
-        let noteY = stemBottom - noteR * 0.3
-        path.addEllipse(in: CGRect(x: noteX - noteR, y: noteY, width: noteR * 2, height: noteR * 1.6))
-
-        // Curved top (the flag)
-        path.move(to: CGPoint(x: stemX + stemWidth, y: stemTop + h * 0.05))
-        path.addQuadCurve(
-            to: CGPoint(x: w * 0.95, y: stemTop + h * 0.18),
-            control: CGPoint(x: w * 0.95, y: stemTop)
-        )
-        path.addLine(to: CGPoint(x: w * 0.95, y: stemTop + h * 0.3))
-        path.addQuadCurve(
-            to: CGPoint(x: stemX + stemWidth, y: stemTop + h * 0.17),
-            control: CGPoint(x: w * 0.78, y: stemTop + h * 0.22)
-        )
-        path.closeSubpath()
-
-        return path
     }
 }
 
@@ -225,7 +215,7 @@ struct XLogo: View {
     }
 }
 
-// MARK: - Facebook (F letterform)
+// MARK: - Facebook (Bold "f" path on blue circle)
 struct FacebookLogo: View {
     let size: CGFloat
 
@@ -235,11 +225,47 @@ struct FacebookLogo: View {
                 .fill(Color(red: 0.09, green: 0.47, blue: 0.95))
                 .frame(width: size, height: size)
 
-            // "f" letter
-            Text("f")
-                .font(.system(size: size * 0.6, weight: .bold, design: .rounded))
-                .foregroundColor(.white)
-                .offset(x: size * 0.02, y: size * 0.03)
+            // Draw the Facebook "f" as a Canvas path for precise control
+            Canvas { context, canvasSize in
+                let s = canvasSize.width
+
+                // The Facebook "f" is: vertical bar + horizontal crossbar + curved top
+                let barW = s * 0.18  // width of the vertical stroke
+                let barL = s * 0.38  // left edge of vertical bar (slightly right of center)
+                let barR = barL + barW
+
+                // Vertical bar — runs from middle area down to bottom
+                let vTop = s * 0.28
+                let vBot = s * 0.82
+                var vBar = Path()
+                vBar.addRect(CGRect(x: barL, y: vTop, width: barW, height: vBot - vTop))
+                context.fill(vBar, with: .color(.white))
+
+                // Horizontal crossbar
+                let crossY = s * 0.46
+                let crossH = barW * 0.75
+                let crossL = s * 0.22
+                let crossR = s * 0.68
+                var cross = Path()
+                cross.addRect(CGRect(x: crossL, y: crossY, width: crossR - crossL, height: crossH))
+                context.fill(cross, with: .color(.white))
+
+                // Curved top of the "f" (curves right from top of vertical bar)
+                var curve = Path()
+                curve.move(to: CGPoint(x: barL, y: vTop + barW * 0.3))
+                curve.addQuadCurve(
+                    to: CGPoint(x: s * 0.65, y: s * 0.14),
+                    control: CGPoint(x: barL, y: s * 0.13)
+                )
+                curve.addLine(to: CGPoint(x: s * 0.65, y: s * 0.14 + crossH))
+                curve.addQuadCurve(
+                    to: CGPoint(x: barR, y: vTop + barW * 0.3),
+                    control: CGPoint(x: barR, y: s * 0.16)
+                )
+                curve.closeSubpath()
+                context.fill(curve, with: .color(.white))
+            }
+            .frame(width: size, height: size)
         }
         .frame(width: size, height: size)
     }
