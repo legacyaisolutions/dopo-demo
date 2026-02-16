@@ -231,6 +231,62 @@
     font-family: 'DM Sans', sans-serif; padding: 4px 8px; border-radius: 4px; transition: all 0.15s;
   }
   .coll-manage-btn:hover { color: var(--error); background: rgba(248,113,113,0.08); }
+  .coll-manage-btn.share-btn:hover { color: var(--accent); background: var(--accent-glow); }
+  /* Share modal styles */
+  .share-section { margin-bottom: 20px; }
+  .share-section-title { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .share-toggle-row {
+    display: flex; align-items: center; justify-content: space-between; padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .share-toggle-label { font-size: 14px; color: var(--text); }
+  .share-toggle-desc { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  .toggle-switch {
+    position: relative; width: 44px; height: 24px; background: var(--border); border-radius: 12px;
+    cursor: pointer; transition: background 0.2s; border: none; padding: 0;
+  }
+  .toggle-switch.on { background: var(--accent); }
+  .toggle-switch::after {
+    content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px;
+    background: #fff; border-radius: 50%; transition: transform 0.2s;
+  }
+  .toggle-switch.on::after { transform: translateX(20px); }
+  .share-link-row {
+    display: flex; gap: 8px; align-items: center; margin-top: 12px; padding: 10px 14px;
+    background: var(--bg); border-radius: 8px; border: 1px solid var(--border);
+  }
+  .share-link-url {
+    flex: 1; font-size: 12px; color: var(--text-muted); font-family: 'Space Mono', monospace;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .share-link-copy {
+    background: var(--accent); color: #fff; border: none; border-radius: 6px; padding: 6px 14px;
+    font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s; white-space: nowrap;
+  }
+  .share-link-copy:hover { background: #ff8555; }
+  .collab-list { margin-top: 8px; }
+  .collab-row {
+    display: flex; align-items: center; justify-content: space-between; padding: 8px 0;
+    border-bottom: 1px solid rgba(42,42,61,0.5); font-size: 13px;
+  }
+  .collab-email { color: var(--text); }
+  .collab-role { color: var(--text-dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .collab-remove { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 14px; padding: 2px 6px; border-radius: 4px; }
+  .collab-remove:hover { color: var(--error); background: rgba(248,113,113,0.1); }
+  .collab-invite-row { display: flex; gap: 8px; margin-top: 12px; }
+  .collab-invite-input {
+    flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 12px; color: var(--text); font-size: 13px; font-family: 'DM Sans', sans-serif; outline: none;
+  }
+  .collab-invite-input:focus { border-color: var(--accent); }
+  .collab-invite-btn {
+    background: var(--surface); border: 1px solid var(--accent); color: var(--accent); border-radius: 8px;
+    padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s;
+  }
+  .collab-invite-btn:hover { background: var(--accent-glow); }
+  .collab-status { font-size: 12px; margin-top: 6px; min-height: 18px; }
   @media (max-width: 600px) { .cards-grid { grid-template-columns: 1fr; } .ingest-bar { flex-direction: column; } .toolbar { flex-direction: column; } .search-input { min-width: 100%; } }
   @keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
   .card { animation: fadeInUp 0.3s ease-out both; }
@@ -319,7 +375,8 @@
     <div id="collChips"></div>
     <button class="coll-chip-add" onclick="openCreateCollectionModal()">+ New</button>
     <div class="coll-manage-bar" id="collManageBar" style="display: none;">
-      <button class="coll-manage-btn" id="collDeleteBtn" onclick="deleteSelectedCollection()">Delete</button>
+      <button class="coll-manage-btn share-btn" onclick="openShareModal()">Share</button>
+      <button class="coll-manage-btn" onclick="deleteSelectedCollection()">Delete</button>
     </div>
   </div>
   <div id="statsBar" class="stats-bar"></div>
@@ -349,6 +406,40 @@
     <div id="addToCollList" style="max-height: 300px; overflow-y: auto;"></div>
     <div class="modal-actions" style="margin-top: 16px;">
       <button class="modal-btn modal-btn-secondary" onclick="closeAddToCollModal()">Done</button>
+    </div>
+  </div>
+</div>
+<!-- Share & Collaborate Modal -->
+<div id="shareModal" class="modal-overlay hidden">
+  <div class="modal-box" style="max-width: 480px;">
+    <h3 id="shareModalTitle">Share Collection</h3>
+    <!-- Public link section -->
+    <div class="share-section">
+      <div class="share-section-title">Public Link</div>
+      <div class="share-toggle-row">
+        <div>
+          <div class="share-toggle-label">Make collection public</div>
+          <div class="share-toggle-desc">Anyone with the link can view this collection</div>
+        </div>
+        <button id="shareToggle" class="toggle-switch" onclick="togglePublicShare()"></button>
+      </div>
+      <div id="shareLinkRow" class="share-link-row" style="display: none;">
+        <span id="shareLinkUrl" class="share-link-url"></span>
+        <button class="share-link-copy" onclick="copyShareLink()">Copy</button>
+      </div>
+    </div>
+    <!-- Collaborators section -->
+    <div class="share-section">
+      <div class="share-section-title">Collaborators</div>
+      <div id="collabList" class="collab-list"></div>
+      <div class="collab-invite-row">
+        <input id="collabEmail" class="collab-invite-input" type="email" placeholder="Email address" onkeydown="if(event.key==='Enter')inviteCollaborator()" />
+        <button class="collab-invite-btn" onclick="inviteCollaborator()">Invite</button>
+      </div>
+      <div id="collabStatus" class="collab-status"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-secondary" onclick="closeShareModal()">Done</button>
     </div>
   </div>
 </div>
@@ -622,9 +713,11 @@ function renderCollectionsBar() {
   const chips = document.getElementById("collChips");
   const manageBar = document.getElementById("collManageBar");
   bar.style.display = "flex";
-  chips.innerHTML = collections.map(c =>
-    `<button class="coll-chip ${currentCollection === c.id ? 'active' : ''}" data-coll="${c.id}" onclick="setCollection('${c.id}')">${c.emoji || '📁'} ${esc(c.name)} <span class="coll-count">${c.save_count}</span></button>`
-  ).join("");
+  chips.innerHTML = collections.map(c => {
+    const publicIcon = c.is_public ? ' 🔗' : '';
+    const sharedIcon = (!c.is_owner && c.role) ? ' 👥' : '';
+    return `<button class="coll-chip ${currentCollection === c.id ? 'active' : ''}" data-coll="${c.id}" onclick="setCollection('${c.id}')">${c.emoji || '📁'} ${esc(c.name)}${publicIcon}${sharedIcon} <span class="coll-count">${c.save_count}</span></button>`;
+  }).join("");
   // Update "All Saves" active state
   document.querySelector('[data-coll="all"]').className = `coll-chip ${currentCollection === 'all' ? 'active' : ''}`;
   // Show delete button when a specific collection is selected
@@ -720,6 +813,217 @@ function closeAddToCollModal() {
   loadLibrary(document.getElementById("searchInput").value.trim());
 }
 
+// ─── SHARE & COLLABORATE ───
+let shareCollectionId = null;
+let shareCollectionData = null;
+
+function openShareModal() {
+  if (currentCollection === "all") return;
+  shareCollectionId = currentCollection;
+  const coll = collections.find(c => c.id === currentCollection);
+  if (!coll) return;
+  shareCollectionData = coll;
+  document.getElementById("shareModalTitle").textContent = `Share "${coll.name}"`;
+  // Set toggle state
+  const toggle = document.getElementById("shareToggle");
+  toggle.className = `toggle-switch ${coll.is_public ? 'on' : ''}`;
+  // Show/hide link
+  updateShareLinkDisplay(coll);
+  // Load collaborators
+  loadCollaborators(coll.id);
+  document.getElementById("shareModal").classList.remove("hidden");
+}
+
+function closeShareModal() {
+  document.getElementById("shareModal").classList.add("hidden");
+  shareCollectionId = null;
+  shareCollectionData = null;
+  document.getElementById("collabStatus").textContent = "";
+  document.getElementById("collabEmail").value = "";
+  loadCollections(); // refresh counts/state
+}
+
+async function togglePublicShare() {
+  if (!shareCollectionId) return;
+  const toggle = document.getElementById("shareToggle");
+  const newState = !toggle.classList.contains("on");
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/library/collections`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}`, apikey: SUPABASE_ANON_KEY },
+      body: JSON.stringify({ action: "toggle_share", collection_id: shareCollectionId, is_public: newState }),
+    });
+    const data = await resp.json();
+    if (resp.ok && data.collection) {
+      toggle.className = `toggle-switch ${data.collection.is_public ? 'on' : ''}`;
+      shareCollectionData = { ...shareCollectionData, ...data.collection };
+      // Update in collections array too
+      const idx = collections.findIndex(c => c.id === shareCollectionId);
+      if (idx >= 0) { collections[idx].is_public = data.collection.is_public; collections[idx].share_token = data.collection.share_token; }
+      updateShareLinkDisplay(shareCollectionData);
+    }
+  } catch (e) { console.error("Failed to toggle share", e); }
+}
+
+function updateShareLinkDisplay(coll) {
+  const row = document.getElementById("shareLinkRow");
+  const urlEl = document.getElementById("shareLinkUrl");
+  if (coll.is_public && coll.share_token) {
+    const shareUrl = `${window.location.origin}${window.location.pathname}?shared=${coll.share_token}`;
+    urlEl.textContent = shareUrl;
+    row.style.display = "flex";
+  } else {
+    row.style.display = "none";
+  }
+}
+
+function copyShareLink() {
+  const url = document.getElementById("shareLinkUrl").textContent;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.querySelector(".share-link-copy");
+    btn.textContent = "Copied!";
+    setTimeout(() => { btn.textContent = "Copy"; }, 2000);
+  });
+}
+
+async function loadCollaborators(collId) {
+  const list = document.getElementById("collabList");
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/library/collaborators?collection_id=${collId}`, {
+      headers: { Authorization: `Bearer ${accessToken}`, apikey: SUPABASE_ANON_KEY }
+    });
+    const data = await resp.json();
+    const collabs = data.collaborators || [];
+    if (collabs.length === 0) {
+      list.innerHTML = `<div style="color:var(--text-dim);font-size:13px;padding:8px 0;">No collaborators yet</div>`;
+    } else {
+      list.innerHTML = collabs.map(c => `<div class="collab-row">
+        <span class="collab-email">${esc(c.email || c.invited_email || 'unknown')}</span>
+        <span style="display:flex;align-items:center;gap:8px;">
+          <span class="collab-role">${c.role}${!c.accepted ? ' (pending)' : ''}</span>
+          <button class="collab-remove" onclick="removeCollaborator('${c.id}')" title="Remove">&times;</button>
+        </span>
+      </div>`).join("");
+    }
+  } catch (e) {
+    list.innerHTML = `<div style="color:var(--text-dim);font-size:13px;padding:8px 0;">No collaborators yet</div>`;
+  }
+}
+
+async function inviteCollaborator() {
+  const emailInput = document.getElementById("collabEmail");
+  const status = document.getElementById("collabStatus");
+  const email = emailInput.value.trim();
+  if (!email || !shareCollectionId) return;
+  status.textContent = "Inviting...";
+  status.style.color = "var(--text-muted)";
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/library/collaborators`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}`, apikey: SUPABASE_ANON_KEY },
+      body: JSON.stringify({ collection_id: shareCollectionId, email, role: "editor" }),
+    });
+    const data = await resp.json();
+    if (resp.ok) {
+      status.textContent = data.status === "invited" ? `${email} added as editor!` : `Invite saved — ${email} will get access when they sign up`;
+      status.style.color = "var(--success)";
+      emailInput.value = "";
+      loadCollaborators(shareCollectionId);
+    } else {
+      status.textContent = data.error || "Failed to invite";
+      status.style.color = "var(--error)";
+    }
+  } catch (e) {
+    status.textContent = "Network error";
+    status.style.color = "var(--error)";
+  }
+  setTimeout(() => { status.textContent = ""; }, 4000);
+}
+
+async function removeCollaborator(collabId) {
+  if (!shareCollectionId) return;
+  try {
+    await fetch(`${SUPABASE_URL}/functions/v1/library/collaborators?id=${collabId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${accessToken}`, apikey: SUPABASE_ANON_KEY },
+    });
+    loadCollaborators(shareCollectionId);
+  } catch (e) { console.error("Failed to remove collaborator", e); }
+}
+
+// ─── SHARED VIEW (public collection via URL param) ───
+async function checkSharedView() {
+  const params = new URLSearchParams(window.location.search);
+  const shareToken = params.get("shared");
+  if (!shareToken) return false;
+  // Load shared collection
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/library/shared/${shareToken}`, {
+      headers: { apikey: SUPABASE_ANON_KEY }
+    });
+    if (!resp.ok) return false;
+    const data = await resp.json();
+    renderSharedView(data);
+    return true;
+  } catch { return false; }
+}
+
+function renderSharedView(data) {
+  // Hide auth and app, show shared view
+  document.getElementById("authOverlay").style.display = "none";
+  document.getElementById("app").style.display = "none";
+  const container = document.createElement("div");
+  container.className = "app";
+  container.style.display = "block";
+  const coll = data.collection;
+  const saves = data.saves || [];
+  container.innerHTML = `
+    <header class="header">
+      <div><div class="logo">dopo</div><div class="logo-sub">shared collection</div></div>
+      <div class="header-right">
+        <span class="user-badge">by ${esc(data.owner)}</span>
+        <a href="${window.location.pathname}" class="sign-out-btn" style="text-decoration:none;">Sign In</a>
+      </div>
+    </header>
+    <div style="margin-bottom:24px;">
+      <h2 style="font-size:22px;margin-bottom:4px;">${coll.emoji || '📁'} ${esc(coll.name)}</h2>
+      ${coll.description ? `<p style="color:var(--text-muted);font-size:14px;">${esc(coll.description)}</p>` : ''}
+      <div class="stats-bar" style="margin-top:8px;">${saves.length} save${saves.length !== 1 ? 's' : ''}</div>
+    </div>
+    <div class="cards-grid">${saves.map(renderSharedCard).join("")}</div>
+    ${saves.length === 0 ? '<div class="empty-state"><div class="empty-state-icon">📌</div><h3>Empty collection</h3><p>This collection doesn\'t have any saves yet.</p></div>' : ''}
+  `;
+  document.body.appendChild(container);
+}
+
+function renderSharedCard(save) {
+  const p = save.platform || "other";
+  const icon = platformSVG[p] || platformSVG.other;
+  const label = platformLabels[p] || "Other";
+  const title = save.title || save.canonical_url || save.url;
+  const thumb = save.thumbnail_url;
+  const tags = [...(save.ai_tags || [])];
+  const thumbHtml = thumb
+    ? `<div class="card-thumb-wrap"><div class="card-thumb-placeholder ${p}">${icon}</div><img class="card-thumb" src="${esc(thumb)}" alt="" loading="lazy" onerror="this.style.display='none'" /></div>`
+    : `<div class="card-thumb-placeholder ${p}">${icon}</div>`;
+  const tagsHtml = tags.slice(0, 5).map(t => `<span class="card-tag">#${esc(t)}</span>`).join("");
+  const dateStr = save.saved_at ? new Date(save.saved_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
+  const categoryHtml = save.category && save.category !== 'other' ? `<span class="card-tag" style="background:var(--accent-glow);color:var(--accent);">${esc(save.category)}</span>` : "";
+  return `<div class="card">
+    ${thumbHtml}
+    <div class="card-body">
+      <div><span class="card-platform ${p}">${icon} ${label}</span><span class="card-content-type">${save.content_type||""}</span></div>
+      <div class="card-title">${esc(title.substring(0,200))}</div>
+      ${save.creator_name ? `<div class="card-creator">${esc(save.creator_name)}${save.creator_handle ? ` <span class="card-creator-handle">${esc(save.creator_handle)}</span>` : ""}</div>` : ""}
+      ${(tagsHtml || categoryHtml) ? `<div class="card-tags">${categoryHtml}${tagsHtml}</div>` : ""}
+      <div class="card-meta">
+        <span class="card-date">${dateStr}</span>
+        <a class="card-link" href="${esc(save.canonical_url||save.url)}" target="_blank" rel="noopener">Open ↗</a>
+      </div>
+    </div>
+  </div>`;
+}
+
 async function toggleSaveInCollection(saveId, collId, btn) {
   const check = document.getElementById(`coll-check-${collId}`);
   const isIn = check.textContent === "✓";
@@ -737,6 +1041,8 @@ async function toggleSaveInCollection(saveId, collId, btn) {
 }
 
 (async function init() {
+  // Check if this is a shared collection view first
+  if (await checkSharedView()) return;
   document.querySelector('[data-filter="all"]').classList.add("active");
   if (await checkExistingSession()) showApp();
 })();
