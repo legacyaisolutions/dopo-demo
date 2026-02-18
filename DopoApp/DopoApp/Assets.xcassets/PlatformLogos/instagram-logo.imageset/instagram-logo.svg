@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="ig-grad" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#833AB4"/>
+      <stop offset="33%" stop-color="#E1306C"/>
+      <stop offset="66%" stop-color="#FD1D1D"/>
+      <stop offset="100%" stop-color="#FCAF45"/>
+    </linearGradient>
+  </defs>
+  <!-- Instagram: Gradient rounded rect, camera outline -->
+  <rect x="2" y="2" width="116" height="116" rx="30" ry="30" fill="url(#ig-grad)"/>
+  <!-- Inner border -->
+  <rect x="18" y="18" width="84" height="84" rx="20" ry="20" fill="none" stroke="#FFFFFF" stroke-width="8"/>
+  <!-- Lens circle -->
+  <circle cx="60" cy="60" r="20" fill="none" stroke="#FFFFFF" stroke-width="8"/>
+  <!-- Flash dot -->
+  <circle cx="88" cy="32" r="6" fill="#FFFFFF"/>
+</svg>

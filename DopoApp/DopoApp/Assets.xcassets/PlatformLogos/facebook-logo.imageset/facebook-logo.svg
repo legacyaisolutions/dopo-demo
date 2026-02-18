@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <!-- Facebook: Blue circle with white "f" -->
+  <circle cx="60" cy="60" r="58" fill="#1877F2"/>
+  <!-- Facebook "f" lettermark -->
+  <path d="M68,46 L68,38 C68,34 70,32 75,32 L82,32 L82,20 L72,20 C62,20 56,27 56,37 L56,46 L46,46 L46,58 L56,58 L56,100 L68,100 L68,58 L80,58 L82,46 Z" fill="#FFFFFF"/>
+</svg>
