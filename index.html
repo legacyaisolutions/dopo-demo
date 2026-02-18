@@ -372,14 +372,31 @@
   .skeleton-line.long { width: 100%; }
   @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
   @media (max-width: 600px) {
-    .cards-grid, .skeleton-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    .card-thumb, .card-thumb-placeholder { height: 120px; }
-    .card-thumb-wrap { height: 120px; }
-    .card-body { padding: 10px 12px 12px; }
-    .card-title { font-size: 13px; -webkit-line-clamp: 2; }
-    .card-creator { font-size: 12px; }
+    .cards-grid, .skeleton-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    /* Square tile cards on mobile */
+    .card { position: relative; aspect-ratio: 1; overflow: hidden; }
+    .card-thumb-wrap { position: absolute; inset: 0; height: 100%; width: 100%; }
+    .card-thumb-wrap .card-thumb-placeholder { height: 100%; }
+    .card-thumb { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .card-thumb-placeholder { height: 100%; }
+    .card-platform-overlay { z-index: 3; }
+    /* Overlay title at bottom with gradient */
+    .card-body {
+      position: absolute; bottom: 0; left: 0; right: 0; z-index: 2;
+      background: linear-gradient(transparent, rgba(0,0,0,0.85));
+      padding: 24px 10px 10px;
+    }
+    .card-body > div:first-child { display: none; } /* hide platform badge row */
+    .card-title { font-size: 12px; -webkit-line-clamp: 2; color: #fff; margin-bottom: 0; line-height: 1.3; }
+    .card-creator { display: none; }
     .card-tags { display: none; }
-    .card-meta { margin-top: 6px; padding-top: 6px; }
+    .card-meta { display: none; }
+    .card-enrichment { z-index: 4; }
+    .card:hover { transform: none; box-shadow: none; }
+    /* Square skeleton cards on mobile */
+    .skeleton-card { aspect-ratio: 1; }
+    .skeleton-thumb { height: 100%; }
+    .skeleton-body { display: none; }
     .ingest-bar { flex-direction: column; }
     .toolbar { flex-direction: column; }
     .search-input { min-width: 100%; }
