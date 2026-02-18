@@ -925,14 +925,14 @@ async function smartSearchLibrary(query, grid, empty, stats, hint) {
     }
     const saves = data.saves || [];
     currentSaves = saves;
-    const method = data.searchMethod || "smart";
+    const method = data.search_method || "smart";
     stats.innerHTML = `✨ ${saves.length} result${saves.length !== 1 ? "s" : ""} <span style="color:var(--text-dim);font-size:11px;">(${method} search)</span>`;
     // Show parsed query hints
     if (data.parsed) {
       const parts = [];
-      if (data.parsed.semanticQuery) parts.push(`<span class="search-hint-tag">"${esc(data.parsed.semanticQuery)}"</span>`);
+      if (data.parsed.semantic_query) parts.push(`<span class="search-hint-tag">"${esc(data.parsed.semantic_query)}"</span>`);
       if (data.parsed.platform) parts.push(`<span class="search-hint-tag">📱 ${esc(platformLabels[data.parsed.platform] || data.parsed.platform)}</span>`);
-      if (data.parsed.contentType) parts.push(`<span class="search-hint-tag">🎬 ${esc(data.parsed.contentType)}</span>`);
+      if (data.parsed.content_type) parts.push(`<span class="search-hint-tag">🎬 ${esc(data.parsed.content_type)}</span>`);
       if (data.parsed.temporal) parts.push(`<span class="search-hint-tag">📅 ${esc(data.parsed.temporal)}</span>`);
       if (parts.length > 0) {
         hint.innerHTML = `✨ AI understood: ${parts.join(" ")}`;
