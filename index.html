@@ -69,6 +69,17 @@
   }
   .ingest-btn:hover:not(:disabled) { background: #ff8555; transform: translateY(-1px); box-shadow: 0 4px 16px var(--accent-glow); }
   .ingest-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .ingest-coll-picker {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 10px 12px; color: var(--text-muted); font-size: 13px; font-family: 'DM Sans', sans-serif;
+    cursor: pointer; outline: none; min-width: 130px; max-width: 180px;
+    -webkit-appearance: none; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235a5a72' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center;
+    padding-right: 28px; text-overflow: ellipsis;
+  }
+  .ingest-coll-picker:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+  .ingest-coll-picker option { background: var(--surface); color: var(--text); }
   .ingest-status { margin-top: 10px; font-size: 13px; padding: 10px 14px; border-radius: 8px; display: none; }
   .ingest-status.show { display: block; }
   .ingest-status.success { background: rgba(52, 211, 153, 0.1); color: var(--success); border: 1px solid rgba(52, 211, 153, 0.2); }
@@ -398,6 +409,7 @@
     .skeleton-thumb { height: 100%; }
     .skeleton-body { display: none; }
     .ingest-bar { flex-direction: column; }
+    .ingest-coll-picker { max-width: 100%; min-width: 100%; }
     .toolbar { flex-direction: column; }
     .search-input { min-width: 100%; }
     .collections-bar { gap: 6px; }
@@ -523,6 +535,9 @@
   <div class="ingest-section">
     <div class="ingest-bar">
       <input id="ingestInput" class="ingest-input" type="url" placeholder="Paste a URL from YouTube, Instagram, TikTok, X, Facebook..." onkeydown="if(event.key==='Enter')handleIngest()" />
+      <select id="ingestCollectionPicker" class="ingest-coll-picker" title="Save to collection">
+        <option value="">No folder</option>
+      </select>
       <button id="ingestBtn" class="ingest-btn" onclick="handleIngest()"><span id="ingestBtnText">Save</span></button>
     </div>
     <div id="ingestStatus" class="ingest-status"></div>
@@ -851,12 +866,31 @@ async function handleIngest() {
       statusEl.className = "ingest-status show error";
       statusEl.textContent = data.error === "Already saved" ? "Already in your library!" : `Error: ${data.error}`;
     } else {
-      statusEl.className = "ingest-status show success";
       const s = data.save;
       const displayPlatform = platformLabels[s.platform] || s.platform;
-      statusEl.textContent = `Saved! ${displayPlatform} ${s.content_type} — "${(s.title || "untitled").substring(0, 60)}" by ${s.creator_name || "unknown"}`;
+      const selectedColl = document.getElementById("ingestCollectionPicker").value;
+      // Add to collection if one was selected
+      if (selectedColl && s.id) {
+        try {
+          await fetch(`${SUPABASE_URL}/functions/v1/library/collections`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}`, apikey: SUPABASE_ANON_KEY },
+            body: JSON.stringify({ action: "add_save", collection_id: selectedColl, save_id: s.id }),
+          });
+          const collName = collections.find(c => c.id === selectedColl)?.name || "collection";
+          statusEl.className = "ingest-status show success";
+          statusEl.textContent = `Saved to ${collName}! ${displayPlatform} ${s.content_type} — "${(s.title || "untitled").substring(0, 60)}"`;
+        } catch (e) {
+          statusEl.className = "ingest-status show success";
+          statusEl.textContent = `Saved! (couldn't add to folder) ${displayPlatform} ${s.content_type} — "${(s.title || "untitled").substring(0, 60)}"`;
+        }
+      } else {
+        statusEl.className = "ingest-status show success";
+        statusEl.textContent = `Saved! ${displayPlatform} ${s.content_type} — "${(s.title || "untitled").substring(0, 60)}" by ${s.creator_name || "unknown"}`;
+      }
       input.value = "";
       loadLibrary();
+      loadCollections();
     }
   } catch (e) { statusEl.className = "ingest-status show error"; statusEl.textContent = `Network error: ${e.message}`; }
   btn.disabled = false;
@@ -1068,7 +1102,18 @@ async function loadCollections() {
     const data = await resp.json();
     collections = data.collections || [];
     renderCollectionsBar();
+    updateIngestCollectionPicker();
   } catch (e) { console.error("Failed to load collections", e); }
+}
+
+function updateIngestCollectionPicker() {
+  const picker = document.getElementById("ingestCollectionPicker");
+  if (!picker) return;
+  const editableColls = collections.filter(c => c.is_owner || c.role === 'editor');
+  const prev = picker.value;
+  picker.innerHTML = '<option value="">No folder</option>' +
+    editableColls.map(c => `<option value="${c.id}">${c.emoji || '✦'} ${esc(c.name)}</option>`).join("");
+  if (prev && editableColls.some(c => c.id === prev)) picker.value = prev;
 }
 
 function renderCollectionsBar() {
