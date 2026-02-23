@@ -40,34 +40,35 @@ struct SaveCard: View {
                             platformPlaceholder
                         }
 
-                        // Enrichment dot
-                        VStack {
-                            HStack {
-                                Spacer()
-                                Circle()
-                                    .fill(enrichmentColor)
-                                    .frame(width: 8, height: 8)
-                            }
-                            Spacer()
-                        }
-                        .padding(8)
-
-                        // Platform logo (top-left) — shifts right in select mode
-                        VStack {
-                            HStack {
-                                if !isSelectMode {
-                                    PlatformLogoOverlay(save.platformColor, size: 22)
+                        // Enrichment dot (top-right, hidden in select mode)
+                        if !isSelectMode {
+                            VStack {
+                                HStack {
+                                    Spacer()
+                                    Circle()
+                                        .fill(enrichmentColor)
+                                        .frame(width: 8, height: 8)
                                 }
                                 Spacer()
                             }
+                            .padding(8)
+                        }
+
+                        // Platform logo (top-left) — always visible
+                        VStack {
+                            HStack {
+                                PlatformLogoOverlay(save.platformColor, size: 22)
+                                Spacer()
+                            }
                             Spacer()
                         }
                         .padding(8)
 
-                        // Selection checkbox overlay (top-left)
+                        // Selection checkbox overlay (top-right)
                         if isSelectMode {
                             VStack {
                                 HStack {
+                                    Spacer()
                                     ZStack {
                                         Circle()
                                             .fill(isSelected ? Color.dopoAccent : Color.black.opacity(0.3))
@@ -81,7 +82,6 @@ struct SaveCard: View {
                                                 .foregroundColor(.white)
                                         }
                                     }
-                                    Spacer()
                                 }
                                 Spacer()
                             }
