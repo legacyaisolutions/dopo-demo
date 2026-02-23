@@ -494,10 +494,12 @@
     .skeleton-body { padding: 8px; }
     .ingest-bar { flex-direction: column; }
     .ingest-coll-picker { max-width: 100%; min-width: 100%; }
-    .toolbar { flex-direction: column; }
-    .search-input { min-width: 100%; }
-    .collections-bar { gap: 6px; }
-    .coll-chip { font-size: 12px; padding: 5px 10px; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 6px; }
+    .search-input { min-width: 100%; flex: 1 1 100%; }
+    .filter-btn { flex: 0 0 auto; padding: 6px 10px; font-size: 12px; }
+    .filter-btn svg { width: 12px; height: 12px; }
+    .collections-bar { display: flex; flex-wrap: wrap; gap: 6px; }
+    .coll-chip { font-size: 11px; padding: 4px 10px; }
     .header { flex-direction: column; gap: 12px; text-align: center; }
     .header-right { justify-content: center; }
     .notif-panel { width: calc(100vw - 32px); right: -60px; }
