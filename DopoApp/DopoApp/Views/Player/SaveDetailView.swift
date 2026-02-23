@@ -5,6 +5,7 @@ struct SaveDetailView: View {
     let save: Save
     @Environment(\.dismiss) private var dismiss
     @State private var showShareSheet = false
+    @State private var showAddToCollection = false
 
     var body: some View {
         NavigationStack {
@@ -112,6 +113,10 @@ struct SaveDetailView: View {
 
                             // Action row
                             HStack(spacing: 12) {
+                                ActionButton(icon: "folder.badge.plus", label: "Collection") {
+                                    HapticManager.impact(.light)
+                                    showAddToCollection = true
+                                }
                                 ActionButton(icon: "square.and.arrow.up", label: "Share") {
                                     HapticManager.impact(.light)
                                     showShareSheet = true
@@ -137,6 +142,9 @@ struct SaveDetailView: View {
                 if let url = URL(string: save.canonicalUrl ?? save.url) {
                     ShareSheet(items: [url])
                 }
+            }
+            .sheet(isPresented: $showAddToCollection) {
+                AddToCollectionSheet(saveId: save.id)
             }
         }
     }

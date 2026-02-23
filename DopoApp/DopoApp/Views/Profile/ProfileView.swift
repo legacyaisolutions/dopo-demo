@@ -8,6 +8,7 @@ struct ProfileView: View {
     @State private var errorMessage: String?
     @State private var showLogoutConfirm = false
     @State private var showAbout = false
+    @State private var showNotifications = false
 
     var body: some View {
         NavigationStack {
@@ -70,8 +71,9 @@ struct ProfileView: View {
                             .padding(.horizontal, 20)
 
                             VStack(spacing: 0) {
-                                ProfileRow(icon: "bell.fill", label: "Notifications", color: .dopoAccent, comingSoon: true) {
+                                ProfileRow(icon: "bell.fill", label: "Notifications", color: .dopoAccent) {
                                     HapticManager.impact(.light)
+                                    showNotifications = true
                                 }
                                 Divider().background(Color.dopoBorder).padding(.leading, 52)
                                 ProfileRow(icon: "paintbrush.fill", label: "Appearance", color: .purple, comingSoon: true) {
@@ -140,6 +142,9 @@ struct ProfileView: View {
                 Button("OK", role: .cancel) {}
             } message: {
                 Text("dopo v1.0.0 beta\n\nYour best finds, all in one place.\n\nBuilt with love by Legacy AI Solutions.")
+            }
+            .sheet(isPresented: $showNotifications) {
+                NotificationListView()
             }
             .task { await loadStats() }
         }

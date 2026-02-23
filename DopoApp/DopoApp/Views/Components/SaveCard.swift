@@ -5,6 +5,7 @@ struct SaveCard: View {
     let onTap: () -> Void
     let onFavorite: () -> Void
     let onDelete: () -> Void
+    var onAddToCollection: (() -> Void)? = nil
 
     var body: some View {
         Button(action: onTap) {
@@ -111,6 +112,15 @@ struct SaveCard: View {
                             .foregroundColor(.dopoTextDim)
 
                         Spacer()
+
+                        if let onAddToCollection {
+                            Button(action: onAddToCollection) {
+                                Image(systemName: "folder.badge.plus")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(.dopoTextDim)
+                            }
+                            .buttonStyle(.plain)
+                        }
 
                         Button(action: onFavorite) {
                             Image(systemName: (save.isFavorite ?? false) ? "star.fill" : "star")

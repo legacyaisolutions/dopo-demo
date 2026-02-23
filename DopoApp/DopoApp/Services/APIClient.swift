@@ -257,4 +257,61 @@ class APIClient {
         request.allHTTPHeaderFields = authHeaders(token)
         let _ = try await performRequest(request)
     }
+
+    // MARK: - Notifications
+
+    func fetchNotifications(token: String, limit: Int = 20, unreadOnly: Bool = false) async throws -> NotificationsResponse {
+        var components = URLComponents(string: "\(DopoConfig.libraryURL)/notifications")!
+        var queryItems = [URLQueryItem(name: "limit", value: "\(limit)")]
+        if unreadOnly { queryItems.append(URLQueryItem(name: "unread", value: "true")) }
+        components.queryItems = queryItems
+        var request = URLRequest(url: components.url!)
+        request.allHTTPHeaderFields = authHeaders(token)
+        let (data, _) = try await performRequest(request)
+        do {
+            return try JSONDecoder().decode(NotificationsResponse.self, from: data)
+        } catch {
+            throw APIError.decodingError(error)
+        }
+    }
+
+    func markNotificationsRead(token: String, ids: [String]? = nil) async throws {
+        var request = URLRequest(url: URL(string: "\(DopoConfig.libraryURL)/notifications")!)
+        request.httpMethod = "PATCH"
+        request.allHTTPHeaderFields = authHeaders(token)
+        let body: [String: Any]
+        if let ids {
+            body = ["ids": ids]
+        } else {
+            body = ["action": "mark_all_read"]
+        }
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        let _ = try await performRequest(request)
+    }
+
+    // MARK: - Create Collection & Add Save (atomic)
+
+    func createCollectionAndAddSave(token: String, name: String, emoji: String, saveId: String) async throws -> DopoCollection {
+        var request = URLRequest(url: URL(string: "\(DopoConfig.libraryURL)/collections")!)
+        request.httpMethod = "POST"
+        request.allHTTPHeaderFields = authHeaders(token)
+        let body: [String: String] = [
+            "action": "create_and_add_save",
+            "name": name,
+            "emoji": emoji,
+            "save_id": saveId
+        ]
+        request.httpBody = try JSONEncoder().encode(body)
+        let (data, _) = try await performRequest(request)
+        struct CreateAndAddResponse: Codable {
+            let success: Bool
+            let collection: DopoCollection
+        }
+        do {
+            let response = try JSONDecoder().decode(CreateAndAddResponse.self, from: data)
+            return response.collection
+        } catch {
+            throw APIError.decodingError(error)
+        }
+    }
 }

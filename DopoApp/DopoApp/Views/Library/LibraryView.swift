@@ -11,6 +11,7 @@ struct LibraryView: View {
     @State private var showDeleteConfirm = false
     @State private var saveToDelete: Save?
     @State private var searchHint: String?
+    @State private var addToCollSave: Save?
 
     let platforms = ["all", "youtube", "instagram", "tiktok", "twitter", "facebook"]
 
@@ -78,6 +79,9 @@ struct LibraryView: View {
                                     HapticManager.impact(.medium)
                                     saveToDelete = save
                                     showDeleteConfirm = true
+                                }, onAddToCollection: {
+                                    HapticManager.impact(.light)
+                                    addToCollSave = save
                                 })
                             }
                         }
@@ -99,6 +103,9 @@ struct LibraryView: View {
                             )
                         )
                 }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    NotificationBellView()
+                }
             }
             .searchable(text: $searchText, prompt: "Search your library...")
             .onChange(of: searchText) { _ in
@@ -110,6 +117,9 @@ struct LibraryView: View {
             .refreshable { await loadSaves() }
             .sheet(item: $selectedSave) { save in
                 SaveDetailView(save: save)
+            }
+            .sheet(item: $addToCollSave) { save in
+                AddToCollectionSheet(saveId: save.id)
             }
             .alert("Delete Save", isPresented: $showDeleteConfirm) {
                 Button("Cancel", role: .cancel) { }
