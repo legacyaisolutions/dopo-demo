@@ -289,6 +289,35 @@ class APIClient {
         let _ = try await performRequest(request)
     }
 
+    // MARK: - Batch Operations
+
+    func batchFavorite(token: String, saveIds: [String], isFavorite: Bool) async throws {
+        var request = URLRequest(url: URL(string: DopoConfig.libraryURL)!)
+        request.httpMethod = "PATCH"
+        request.allHTTPHeaderFields = authHeaders(token)
+        let body: [String: Any] = ["ids": saveIds, "is_favorite": isFavorite]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        let _ = try await performRequest(request)
+    }
+
+    func batchDelete(token: String, saveIds: [String]) async throws {
+        var request = URLRequest(url: URL(string: DopoConfig.libraryURL)!)
+        request.httpMethod = "DELETE"
+        request.allHTTPHeaderFields = authHeaders(token)
+        let body: [String: Any] = ["ids": saveIds]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        let _ = try await performRequest(request)
+    }
+
+    func batchAddToCollection(token: String, collectionId: String, saveIds: [String]) async throws {
+        var request = URLRequest(url: URL(string: "\(DopoConfig.libraryURL)/collections")!)
+        request.httpMethod = "POST"
+        request.allHTTPHeaderFields = authHeaders(token)
+        let body: [String: Any] = ["action": "batch_add_saves", "collection_id": collectionId, "save_ids": saveIds]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        let _ = try await performRequest(request)
+    }
+
     // MARK: - Create Collection & Add Save (atomic)
 
     func createCollectionAndAddSave(token: String, name: String, emoji: String, saveId: String) async throws -> DopoCollection {

@@ -6,6 +6,8 @@ struct SaveCard: View {
     let onFavorite: () -> Void
     let onDelete: () -> Void
     var onAddToCollection: (() -> Void)? = nil
+    var isSelectMode: Bool = false
+    var isSelected: Bool = false
 
     var body: some View {
         Button(action: onTap) {
@@ -50,15 +52,41 @@ struct SaveCard: View {
                         }
                         .padding(8)
 
-                        // Platform logo (top-left)
+                        // Platform logo (top-left) — shifts right in select mode
                         VStack {
                             HStack {
-                                PlatformLogoOverlay(save.platformColor, size: 22)
+                                if !isSelectMode {
+                                    PlatformLogoOverlay(save.platformColor, size: 22)
+                                }
                                 Spacer()
                             }
                             Spacer()
                         }
                         .padding(8)
+
+                        // Selection checkbox overlay (top-left)
+                        if isSelectMode {
+                            VStack {
+                                HStack {
+                                    ZStack {
+                                        Circle()
+                                            .fill(isSelected ? Color.dopoAccent : Color.black.opacity(0.3))
+                                            .frame(width: 26, height: 26)
+                                        Circle()
+                                            .stroke(isSelected ? Color.dopoAccent : Color.white.opacity(0.7), lineWidth: 2)
+                                            .frame(width: 26, height: 26)
+                                        if isSelected {
+                                            Image(systemName: "checkmark")
+                                                .font(.system(size: 13, weight: .bold))
+                                                .foregroundColor(.white)
+                                        }
+                                    }
+                                    Spacer()
+                                }
+                                Spacer()
+                            }
+                            .padding(8)
+                        }
                     }
                 }
                 .frame(height: 120)
@@ -143,7 +171,10 @@ struct SaveCard: View {
             .frame(height: 240)
             .background(Color.dopoSurface)
             .cornerRadius(12)
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.dopoBorder, lineWidth: 1))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(isSelected ? Color.dopoAccent : Color.dopoBorder, lineWidth: isSelected ? 2 : 1)
+            )
             .clipped()
         }
         .buttonStyle(.plain)
