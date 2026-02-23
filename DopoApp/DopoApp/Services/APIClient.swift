@@ -69,6 +69,7 @@ class APIClient {
         query: String? = nil,
         platform: String? = nil,
         collectionId: String? = nil,
+        favorites: Bool = false,
         limit: Int = 50,
         offset: Int = 0
     ) async throws -> LibraryResponse {
@@ -77,6 +78,7 @@ class APIClient {
         if let query, !query.isEmpty { queryItems.append(URLQueryItem(name: "q", value: query)) }
         if let platform, platform != "all" { queryItems.append(URLQueryItem(name: "platform", value: platform)) }
         if let collectionId, !collectionId.isEmpty { queryItems.append(URLQueryItem(name: "collection", value: collectionId)) }
+        if favorites { queryItems.append(URLQueryItem(name: "favorites", value: "true")) }
         components.queryItems = queryItems
 
         var request = URLRequest(url: components.url!)

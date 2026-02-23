@@ -24,7 +24,7 @@ struct PlatformLogo: View {
         case .tiktok:    return "PlatformLogos/tiktok-logo"
         case .twitter:   return "PlatformLogos/x-logo"
         case .facebook:  return "PlatformLogos/facebook-logo"
-        case .other:     return nil
+        case .web:       return nil
         }
     }
 
@@ -35,10 +35,10 @@ struct PlatformLogo: View {
                 .aspectRatio(contentMode: .fit)
                 .frame(width: size, height: size)
         } else {
-            // Fallback for unknown platforms
-            Image(systemName: "link")
-                .font(.system(size: size * 0.6, weight: .semibold))
-                .foregroundColor(.white)
+            // Globe icon for web/other platforms
+            Image(systemName: "globe")
+                .font(.system(size: size * 0.7, weight: .medium))
+                .foregroundColor(.dopoAccent)
                 .frame(width: size, height: size)
         }
     }

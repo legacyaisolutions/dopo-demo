@@ -20,7 +20,7 @@ extension Color {
         case "tiktok": return Color(red: 0.0, green: 0.95, blue: 0.92)
         case "twitter": return Color(red: 0.11, green: 0.61, blue: 0.94)
         case "facebook": return Color(red: 0.09, green: 0.47, blue: 0.95)
-        default: return .dopoTextMuted
+        default: return Color(red: 0.20, green: 0.75, blue: 0.65) // Web — teal globe
         }
     }
 }

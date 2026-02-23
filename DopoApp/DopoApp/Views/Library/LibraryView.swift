@@ -20,13 +20,15 @@ struct LibraryView: View {
     @State private var showBatchCollectionPicker = false
     @State private var batchCollections: [DopoCollection] = []
 
-    let platforms = ["all", "youtube", "instagram", "tiktok", "twitter", "facebook"]
+    @State private var favoritesOnly = false
+
+    let platforms = ["all", "youtube", "instagram", "tiktok", "twitter", "facebook", "web"]
 
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottom) {
                 VStack(spacing: 0) {
-                    // Platform filter bubbles with brand logos
+                    // Platform filter bubbles with brand logos + favorites
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             ForEach(platforms, id: \.self) { platform in
@@ -39,6 +41,30 @@ struct LibraryView: View {
                                     Task { await loadSaves() }
                                 }
                             }
+
+                            // Favorites filter pill
+                            Button {
+                                HapticManager.selection()
+                                favoritesOnly.toggle()
+                                Task { await loadSaves() }
+                            } label: {
+                                HStack(spacing: 6) {
+                                    Image(systemName: favoritesOnly ? "star.fill" : "star")
+                                        .font(.system(size: 13))
+                                    Text("Favorites")
+                                        .font(.system(size: 13, weight: .medium))
+                                }
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 8)
+                                .background(favoritesOnly ? Color.dopoAccentGlow : Color.dopoSurface)
+                                .foregroundColor(favoritesOnly ? .dopoAccent : .dopoTextMuted)
+                                .cornerRadius(20)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 20)
+                                        .stroke(favoritesOnly ? Color.dopoAccent : Color.dopoBorder, lineWidth: 1)
+                                )
+                            }
+                            .buttonStyle(.plain)
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
@@ -316,13 +342,23 @@ struct LibraryView: View {
         }
     }
 
+    /// Map UI platform name to API platform name
+    private var apiPlatform: String? {
+        switch selectedPlatform {
+        case "all": return nil
+        case "web": return "other"
+        default: return selectedPlatform
+        }
+    }
+
     /// Standard library fetch (no search query)
     private func fetchLibrarySaves(token: String) async {
         do {
             searchHint = nil
             let response = try await APIClient.shared.fetchLibrary(
                 token: token,
-                platform: selectedPlatform == "all" ? nil : selectedPlatform
+                platform: apiPlatform,
+                favorites: favoritesOnly
             )
             withAnimation(.easeInOut(duration: 0.2)) {
                 saves = response.saves
@@ -343,7 +379,7 @@ struct LibraryView: View {
             let response = try await APIClient.shared.smartSearch(
                 token: token,
                 query: searchText,
-                platform: selectedPlatform == "all" ? nil : selectedPlatform
+                platform: apiPlatform
             )
 
             // Build a human-readable hint from the parsed query
