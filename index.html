@@ -461,6 +461,45 @@
   .skeleton-line.medium { width: 70%; }
   .skeleton-line.long { width: 100%; }
   @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+  /* ─── BATCH MODE ─── */
+  .batch-select-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; color: var(--text-muted); font-size: 13px; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+  .batch-select-btn:hover { background: var(--surface-hover); color: var(--text); }
+  .batch-select-btn.active { background: var(--accent-glow); color: var(--accent); border-color: var(--accent); }
+  .card-select-check {
+    display: none; position: absolute; top: 8px; left: 8px; z-index: 10;
+    width: 24px; height: 24px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.7);
+    background: rgba(0,0,0,0.3); cursor: pointer; transition: all 0.15s;
+    align-items: center; justify-content: center;
+  }
+  .batch-active .card-select-check { display: flex; }
+  .card.selected .card-select-check { background: var(--accent); border-color: var(--accent); }
+  .card.selected .card-select-check::after { content: '✓'; color: #fff; font-size: 14px; font-weight: 700; }
+  .card.selected { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .batch-active .card { cursor: pointer; }
+  .batch-active .card:hover { transform: none; }
+  .batch-bar {
+    display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000;
+    background: var(--surface); border-top: 1px solid var(--border);
+    padding: 12px 24px; box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+    align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .batch-bar.visible { display: flex; }
+  .batch-bar-count { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; }
+  .batch-bar-actions { display: flex; gap: 8px; align-items: center; }
+  .batch-btn {
+    display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;
+    border-radius: 8px; border: 1px solid var(--border); background: var(--surface);
+    color: var(--text-muted); font-size: 13px; font-family: 'DM Sans', sans-serif;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .batch-btn:hover { background: var(--surface-hover); color: var(--text); }
+  .batch-btn.danger { border-color: rgba(248,113,113,0.3); color: var(--error); }
+  .batch-btn.danger:hover { background: rgba(248,113,113,0.1); }
+  .batch-btn-cancel { background: none; border: none; color: var(--text-dim); font-size: 13px; cursor: pointer; padding: 8px 12px; font-family: 'DM Sans', sans-serif; }
+  .batch-btn-cancel:hover { color: var(--text); }
+  .batch-btn-select-all { background: none; border: none; color: var(--accent); font-size: 12px; cursor: pointer; padding: 4px 8px; font-family: 'DM Sans', sans-serif; text-decoration: underline; }
+
   @media (max-width: 600px) {
     .cards-grid, .skeleton-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
     /* Compact cards: tall thumbnail + slim info footer */
@@ -500,6 +539,12 @@
     .filter-btn svg { width: 12px; height: 12px; }
     .collections-bar { display: flex; flex-wrap: wrap; gap: 6px; }
     .coll-chip { font-size: 11px; padding: 4px 10px; }
+    .batch-select-btn { padding: 6px 10px; font-size: 12px; }
+    .batch-bar { padding: 10px 16px; flex-wrap: wrap; gap: 8px; }
+    .batch-bar-count { font-size: 12px; }
+    .batch-btn { padding: 6px 12px; font-size: 12px; }
+    .batch-btn span.batch-btn-label { display: none; }
+    .card-select-check { width: 22px; height: 22px; top: 6px; left: 6px; }
     .header { flex-direction: column; gap: 12px; text-align: center; }
     .header-right { justify-content: center; }
     .notif-panel { width: calc(100vw - 32px); right: -60px; }
@@ -676,6 +721,19 @@
       Facebook
     </button>
     <button class="filter-btn favorites-pill" id="favFilterBtn" onclick="toggleFavoritesFilter(this)">★ Favorites</button>
+    <button class="batch-select-btn" id="batchSelectBtn" onclick="toggleBatchMode()">☐ Select</button>
+  </div>
+  <div id="batchBar" class="batch-bar">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="batch-bar-count" id="batchCount">0 selected</span>
+      <button class="batch-btn-select-all" id="batchSelectAllBtn" onclick="batchSelectAll()">Select all</button>
+    </div>
+    <div class="batch-bar-actions">
+      <button class="batch-btn" onclick="batchAddToCollection()" title="Add to collection">📁 <span class="batch-btn-label">Collection</span></button>
+      <button class="batch-btn" onclick="batchFavorite()" title="Favorite all">★ <span class="batch-btn-label">Favorite</span></button>
+      <button class="batch-btn danger" onclick="batchDelete()" title="Delete all">🗑 <span class="batch-btn-label">Delete</span></button>
+      <button class="batch-btn-cancel" onclick="toggleBatchMode()">Cancel</button>
+    </div>
   </div>
   <div id="collectionsBar" class="collections-bar" style="display: none;">
     <span class="collections-bar-label">Collections</span>
@@ -789,6 +847,8 @@ let currentSaves = [];
 let addToCollSaveId = null;
 let activeCollectionRole = null; // null = own collection or "all", "editor", "viewer"
 let favoritesOnly = false;
+let batchMode = false;
+let selectedIds = new Set();
 let featureFlags = {}; // Loaded from /config endpoint on init
 const WEB_APP_VERSION = "1.0.0";
 
@@ -1151,7 +1211,10 @@ function renderCard(save) {
   const tagsHtml = uniqueTags.slice(0, 5).map(t => `<span class="card-tag">#${esc(t)}</span>`).join("");
   const dateStr = save.saved_at ? new Date(save.saved_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
   const categoryHtml = save.category && save.category !== 'other' ? `<span class="card-tag" style="background:var(--accent-glow);color:var(--accent);">${esc(save.category)}</span>` : "";
-  return `<div class="card" onclick="openDetailModal('${save.id}')" style="cursor:pointer;">
+  const isSelected = selectedIds.has(save.id);
+  const cardClick = batchMode ? `toggleCardSelection('${save.id}')` : `openDetailModal('${save.id}')`;
+  return `<div class="card ${isSelected ? 'selected' : ''}" data-save-id="${save.id}" onclick="${cardClick}" style="cursor:pointer;">
+    <div class="card-select-check"></div>
     <div class="card-enrichment ${save.enrichment_status||'pending'}" title="Enrichment: ${save.enrichment_status||'pending'}"></div>
     ${thumbHtml}
     <div class="card-body">
@@ -1925,6 +1988,179 @@ async function executeSaveDelete(saveId) {
     });
     if (resp.ok) {
       showToast("Save deleted", "success");
+      loadCollections();
+      loadLibrary(document.getElementById("searchInput").value.trim());
+    } else {
+      const data = await resp.json();
+      showToast(data.error || "Failed to delete", "error");
+    }
+  } catch (e) {
+    showToast("Network error", "error");
+  }
+}
+
+// ─── BATCH MODE ───
+
+function toggleBatchMode() {
+  batchMode = !batchMode;
+  selectedIds.clear();
+  const grid = document.getElementById("cardsGrid");
+  const bar = document.getElementById("batchBar");
+  const btn = document.getElementById("batchSelectBtn");
+  if (batchMode) {
+    grid.classList.add("batch-active");
+    bar.classList.add("visible");
+    btn.classList.add("active");
+    btn.textContent = "☑ Selecting…";
+    // Re-render cards to swap onclick handlers
+    grid.innerHTML = currentSaves.map(renderCard).join("");
+  } else {
+    grid.classList.remove("batch-active");
+    bar.classList.remove("visible");
+    btn.classList.remove("active");
+    btn.textContent = "☐ Select";
+    grid.innerHTML = currentSaves.map(renderCard).join("");
+  }
+  updateBatchBar();
+}
+
+function toggleCardSelection(saveId) {
+  if (selectedIds.has(saveId)) {
+    selectedIds.delete(saveId);
+  } else {
+    selectedIds.add(saveId);
+  }
+  const card = document.querySelector(`.card[data-save-id="${saveId}"]`);
+  if (card) card.classList.toggle("selected", selectedIds.has(saveId));
+  updateBatchBar();
+}
+
+function batchSelectAll() {
+  const allSelected = selectedIds.size === currentSaves.length;
+  if (allSelected) {
+    selectedIds.clear();
+    document.querySelectorAll(".card.selected").forEach(c => c.classList.remove("selected"));
+    document.getElementById("batchSelectAllBtn").textContent = "Select all";
+  } else {
+    currentSaves.forEach(s => selectedIds.add(s.id));
+    document.querySelectorAll(".card[data-save-id]").forEach(c => c.classList.add("selected"));
+    document.getElementById("batchSelectAllBtn").textContent = "Deselect all";
+  }
+  updateBatchBar();
+}
+
+function updateBatchBar() {
+  const count = selectedIds.size;
+  document.getElementById("batchCount").textContent = `${count} selected`;
+  document.querySelectorAll(".batch-btn").forEach(btn => {
+    btn.disabled = count === 0;
+    btn.style.opacity = count === 0 ? "0.4" : "1";
+  });
+}
+
+async function batchAddToCollection() {
+  if (selectedIds.size === 0) return;
+  // Load collections then show picker modal
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/collections`, {
+      headers: { Authorization: `Bearer ${accessToken}`, apikey: SUPABASE_ANON_KEY }
+    });
+    const data = await resp.json();
+    const colls = (data.collections || []).filter(c => c.is_owner || c.role === "editor");
+    const count = selectedIds.size;
+    const modal = document.getElementById("deleteConfirmModal");
+    modal.style.display = "";
+    modal.innerHTML = `<div class="confirm-delete-overlay" onclick="if(event.target===this)closeDeleteConfirm()">
+      <div class="confirm-delete-box" style="max-width:400px;">
+        <h3>Add ${count} save${count>1?"s":""} to collection</h3>
+        <div style="max-height:300px;overflow-y:auto;margin:12px 0;">
+          ${colls.length === 0 ? '<p style="color:var(--text-dim)">No collections yet. Create one first.</p>' :
+            colls.map(c => `<button class="coll-chip" style="display:block;width:100%;text-align:left;margin-bottom:6px;padding:10px 14px;" onclick="executeBatchAddToCollection('${c.id}')">${c.emoji||'📁'} ${esc(c.name)} <span style="color:var(--text-dim);font-size:11px;">(${c.save_count} saves)</span></button>`).join("")}
+        </div>
+        <div class="modal-actions">
+          <button class="modal-btn modal-btn-secondary" onclick="closeDeleteConfirm()">Cancel</button>
+        </div>
+      </div>
+    </div>`;
+  } catch (e) {
+    showToast("Failed to load collections", "error");
+  }
+}
+
+async function executeBatchAddToCollection(collectionId) {
+  closeDeleteConfirm();
+  const ids = [...selectedIds];
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/collections`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}`, apikey: SUPABASE_ANON_KEY },
+      body: JSON.stringify({ action: "batch_add_saves", collection_id: collectionId, save_ids: ids }),
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      showToast(`Added ${data.added} save${data.added>1?"s":""} to collection`, "success");
+      toggleBatchMode();
+      loadCollections();
+    } else {
+      const data = await resp.json();
+      showToast(data.error || "Failed to add to collection", "error");
+    }
+  } catch (e) {
+    showToast("Network error", "error");
+  }
+}
+
+async function batchFavorite() {
+  if (selectedIds.size === 0) return;
+  const ids = [...selectedIds];
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/library`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}`, apikey: SUPABASE_ANON_KEY },
+      body: JSON.stringify({ ids, is_favorite: true }),
+    });
+    if (resp.ok) {
+      showToast(`Favorited ${ids.length} save${ids.length>1?"s":""}`, "success");
+      toggleBatchMode();
+      loadLibrary(document.getElementById("searchInput").value.trim());
+    } else {
+      const data = await resp.json();
+      showToast(data.error || "Failed to favorite", "error");
+    }
+  } catch (e) {
+    showToast("Network error", "error");
+  }
+}
+
+function batchDelete() {
+  if (selectedIds.size === 0) return;
+  const count = selectedIds.size;
+  const modal = document.getElementById("deleteConfirmModal");
+  modal.style.display = "";
+  modal.innerHTML = `<div class="confirm-delete-overlay" onclick="if(event.target===this)closeDeleteConfirm()">
+    <div class="confirm-delete-box">
+      <h3>Delete ${count} Save${count>1?"s":""}</h3>
+      <p>Permanently remove <strong>${count} save${count>1?"s":""}</strong> from your library?<br>This also removes them from all collections.</p>
+      <div class="modal-actions">
+        <button class="modal-btn modal-btn-secondary" onclick="closeDeleteConfirm()">Cancel</button>
+        <button class="modal-btn modal-btn-danger" onclick="executeBatchDelete()">Delete ${count}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function executeBatchDelete() {
+  closeDeleteConfirm();
+  const ids = [...selectedIds];
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/library`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}`, apikey: SUPABASE_ANON_KEY },
+      body: JSON.stringify({ ids }),
+    });
+    if (resp.ok) {
+      showToast(`Deleted ${ids.length} save${ids.length>1?"s":""}`, "success");
+      toggleBatchMode();
       loadCollections();
       loadLibrary(document.getElementById("searchInput").value.trim());
     } else {
