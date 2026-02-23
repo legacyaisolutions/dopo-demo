@@ -139,8 +139,8 @@ struct SaveCard: View {
 
                 Spacer(minLength: 0)
 
-                // Bottom row — action buttons with proper tap targets
-                HStack {
+                // Bottom row — action buttons with generous tap targets
+                HStack(spacing: 0) {
                     Text(save.displayDate)
                         .font(.dopoCaption)
                         .foregroundColor(.dopoTextDim)
@@ -150,9 +150,9 @@ struct SaveCard: View {
                     if let onAddToCollection {
                         Button(action: onAddToCollection) {
                             Image(systemName: "plus.circle")
-                                .font(.system(size: 17))
+                                .font(.system(size: 18))
                                 .foregroundColor(.dopoTextDim)
-                                .frame(width: 36, height: 36)
+                                .frame(width: 44, height: 44)
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
@@ -160,26 +160,27 @@ struct SaveCard: View {
 
                     Button(action: onFavorite) {
                         Image(systemName: (save.isFavorite ?? false) ? "star.fill" : "star")
-                            .font(.system(size: 17))
+                            .font(.system(size: 18))
                             .foregroundColor((save.isFavorite ?? false) ? .dopoAccent : .dopoTextDim)
-                            .frame(width: 36, height: 36)
+                            .frame(width: 44, height: 44)
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
 
                     Button(action: onDelete) {
                         Image(systemName: "trash")
-                            .font(.system(size: 16))
+                            .font(.system(size: 17))
                             .foregroundColor(.dopoTextDim)
-                            .frame(width: 36, height: 36)
+                            .frame(width: 44, height: 44)
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                 }
-                .padding(.trailing, -8) // Offset the extra frame padding on the right
+                .padding(.trailing, -12)
             }
             .padding(10)
             .frame(height: 120)
+            .contentShape(Rectangle()) // Block touches from passing through to cards below
         }
         .frame(height: 240)
         .background(Color.dopoSurface)
