@@ -93,6 +93,7 @@ struct SaveCard: View {
                 .clipped()
             }
             .buttonStyle(.plain)
+            .contentShape(Rectangle()) // Constrain touch to visible 120pt — prevents tap zone bleeding into cards below
 
             // Body — tappable title area + separate action buttons
             VStack(alignment: .leading, spacing: 4) {
@@ -190,6 +191,7 @@ struct SaveCard: View {
                 .stroke(isSelected ? Color.dopoAccent : Color.dopoBorder, lineWidth: isSelected ? 2 : 1)
         )
         .clipped()
+        .contentShape(RoundedRectangle(cornerRadius: 12)) // Strictly bound hit-test to card frame
     }
 
     // MARK: - Rich platform placeholder (no thumbnail)
