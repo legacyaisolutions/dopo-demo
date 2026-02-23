@@ -458,7 +458,7 @@ struct BatchActionBar: View {
                 Spacer()
 
                 HStack(spacing: 8) {
-                    BatchActionButton(icon: "folder.badge.plus", label: "Collection", action: onAddToCollection, disabled: selectedCount == 0)
+                    BatchActionButton(icon: "plus.circle", label: "Collection", action: onAddToCollection, disabled: selectedCount == 0)
                     BatchActionButton(icon: "star.fill", label: "Favorite", action: onFavorite, disabled: selectedCount == 0)
                     BatchActionButton(icon: "trash", label: "Delete", action: onDelete, disabled: selectedCount == 0, isDanger: true)
                 }

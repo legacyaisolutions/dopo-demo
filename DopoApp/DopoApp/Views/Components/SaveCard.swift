@@ -10,9 +10,9 @@ struct SaveCard: View {
     var isSelected: Bool = false
 
     var body: some View {
-        Button(action: onTap) {
-            VStack(alignment: .leading, spacing: 0) {
-                // Thumbnail area — locked to 120pt
+        VStack(alignment: .leading, spacing: 0) {
+            // Thumbnail area — tappable to open detail
+            Button(action: onTap) {
                 GeometryReader { geo in
                     ZStack {
                         if let thumbURL = save.thumbnailUrl, let url = URL(string: thumbURL) {
@@ -91,93 +91,104 @@ struct SaveCard: View {
                 }
                 .frame(height: 120)
                 .clipped()
+            }
+            .buttonStyle(.plain)
 
-                // Body — fixed height so all cards align in the grid
-                VStack(alignment: .leading, spacing: 4) {
-                    // Title
+            // Body — tappable title area + separate action buttons
+            VStack(alignment: .leading, spacing: 4) {
+                // Title — taps open detail
+                Button(action: onTap) {
                     Text(save.displayTitle)
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(.dopoText)
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .buttonStyle(.plain)
 
-                    // Creator
-                    if let creator = save.creatorName {
-                        HStack(spacing: 4) {
-                            Text(creator)
-                                .foregroundColor(.dopoTextMuted)
-                            if let handle = save.creatorHandle {
-                                Text(handle)
-                                    .foregroundColor(.dopoAccent)
-                                    .fontWeight(.medium)
-                            }
-                        }
-                        .font(.system(size: 11))
-                        .lineLimit(1)
-                    }
-
-                    // Tags
-                    if let tags = save.aiTags, !tags.isEmpty {
-                        HStack(spacing: 4) {
-                            ForEach(tags.prefix(2), id: \.self) { tag in
-                                Text("#\(tag)")
-                                    .font(.system(size: 9))
-                                    .foregroundColor(.dopoTextDim)
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                                    .background(Color.dopoSurfaceHover)
-                                    .cornerRadius(4)
-                            }
+                // Creator
+                if let creator = save.creatorName {
+                    HStack(spacing: 4) {
+                        Text(creator)
+                            .foregroundColor(.dopoTextMuted)
+                        if let handle = save.creatorHandle {
+                            Text(handle)
+                                .foregroundColor(.dopoAccent)
+                                .fontWeight(.medium)
                         }
                     }
+                    .font(.system(size: 11))
+                    .lineLimit(1)
+                }
 
-                    Spacer(minLength: 0)
-
-                    // Bottom row — pinned to bottom
-                    HStack {
-                        Text(save.displayDate)
-                            .font(.dopoCaption)
-                            .foregroundColor(.dopoTextDim)
-
-                        Spacer()
-
-                        if let onAddToCollection {
-                            Button(action: onAddToCollection) {
-                                Image(systemName: "folder.badge.plus")
-                                    .font(.system(size: 13))
-                                    .foregroundColor(.dopoTextDim)
-                            }
-                            .buttonStyle(.plain)
-                        }
-
-                        Button(action: onFavorite) {
-                            Image(systemName: (save.isFavorite ?? false) ? "star.fill" : "star")
-                                .font(.system(size: 14))
-                                .foregroundColor((save.isFavorite ?? false) ? .dopoAccent : .dopoTextDim)
-                        }
-                        .buttonStyle(.plain)
-
-                        Button(action: onDelete) {
-                            Image(systemName: "trash")
-                                .font(.system(size: 13))
+                // Tags
+                if let tags = save.aiTags, !tags.isEmpty {
+                    HStack(spacing: 4) {
+                        ForEach(tags.prefix(2), id: \.self) { tag in
+                            Text("#\(tag)")
+                                .font(.system(size: 9))
                                 .foregroundColor(.dopoTextDim)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.dopoSurfaceHover)
+                                .cornerRadius(4)
                         }
-                        .buttonStyle(.plain)
                     }
                 }
-                .padding(10)
-                .frame(height: 120)
+
+                Spacer(minLength: 0)
+
+                // Bottom row — action buttons with proper tap targets
+                HStack {
+                    Text(save.displayDate)
+                        .font(.dopoCaption)
+                        .foregroundColor(.dopoTextDim)
+
+                    Spacer()
+
+                    if let onAddToCollection {
+                        Button(action: onAddToCollection) {
+                            Image(systemName: "plus.circle")
+                                .font(.system(size: 17))
+                                .foregroundColor(.dopoTextDim)
+                                .frame(width: 36, height: 36)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    }
+
+                    Button(action: onFavorite) {
+                        Image(systemName: (save.isFavorite ?? false) ? "star.fill" : "star")
+                            .font(.system(size: 17))
+                            .foregroundColor((save.isFavorite ?? false) ? .dopoAccent : .dopoTextDim)
+                            .frame(width: 36, height: 36)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+
+                    Button(action: onDelete) {
+                        Image(systemName: "trash")
+                            .font(.system(size: 16))
+                            .foregroundColor(.dopoTextDim)
+                            .frame(width: 36, height: 36)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.trailing, -8) // Offset the extra frame padding on the right
             }
-            .frame(height: 240)
-            .background(Color.dopoSurface)
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(isSelected ? Color.dopoAccent : Color.dopoBorder, lineWidth: isSelected ? 2 : 1)
-            )
-            .clipped()
+            .padding(10)
+            .frame(height: 120)
         }
-        .buttonStyle(.plain)
+        .frame(height: 240)
+        .background(Color.dopoSurface)
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(isSelected ? Color.dopoAccent : Color.dopoBorder, lineWidth: isSelected ? 2 : 1)
+        )
+        .clipped()
     }
 
     // MARK: - Rich platform placeholder (no thumbnail)
@@ -240,4 +251,3 @@ struct SaveCard: View {
         }
     }
 }
-

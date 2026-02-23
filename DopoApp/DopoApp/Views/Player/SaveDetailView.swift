@@ -113,7 +113,7 @@ struct SaveDetailView: View {
 
                             // Action row
                             HStack(spacing: 12) {
-                                ActionButton(icon: "folder.badge.plus", label: "Collection") {
+                                ActionButton(icon: "plus.circle", label: "Collection") {
                                     HapticManager.impact(.light)
                                     showAddToCollection = true
                                 }
