@@ -352,6 +352,85 @@
   .modal-btn-danger:hover { background: #ef4444; }
   .card-action.delete-btn:hover { color: var(--error); }
   /* Toast notifications */
+  /* Notification Bell */
+  .notif-bell {
+    position: relative; background: none; border: 1px solid var(--border); border-radius: 50%;
+    width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s; color: var(--text-muted);
+  }
+  .notif-bell:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+  .notif-bell svg { width: 18px; height: 18px; }
+  .notif-badge {
+    position: absolute; top: -4px; right: -4px; background: var(--accent); color: #fff;
+    font-size: 10px; font-weight: 700; font-family: 'DM Sans', sans-serif;
+    min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center;
+    justify-content: center; padding: 0 4px; border: 2px solid var(--bg);
+    line-height: 1;
+  }
+  .notif-badge.hidden { display: none; }
+  /* Notification Panel */
+  .notif-panel {
+    position: absolute; top: calc(100% + 8px); right: 0; width: 360px; max-height: 440px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5); z-index: 300; display: none;
+    flex-direction: column; overflow: hidden;
+  }
+  .notif-panel.open { display: flex; }
+  .notif-panel-header {
+    display: flex; align-items: center; justify-content: space-between; padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .notif-panel-header h4 { font-size: 14px; font-weight: 600; color: var(--text); }
+  .notif-mark-read {
+    background: none; border: none; color: var(--accent); font-size: 12px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; padding: 4px 8px; border-radius: 6px; transition: background 0.15s;
+  }
+  .notif-mark-read:hover { background: var(--accent-glow); }
+  .notif-list { flex: 1; overflow-y: auto; }
+  .notif-item {
+    display: flex; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border);
+    cursor: default; transition: background 0.15s; align-items: flex-start;
+  }
+  .notif-item:hover { background: var(--surface-hover); }
+  .notif-item.unread { background: rgba(255, 107, 53, 0.04); }
+  .notif-item.unread::before {
+    content: ''; flex-shrink: 0; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent); margin-top: 6px;
+  }
+  .notif-item:not(.unread)::before {
+    content: ''; flex-shrink: 0; width: 8px; height: 8px; margin-top: 6px;
+  }
+  .notif-content { flex: 1; min-width: 0; }
+  .notif-title { font-size: 13px; color: var(--text); line-height: 1.4; }
+  .notif-time { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+  .notif-empty { padding: 40px 16px; text-align: center; color: var(--text-dim); font-size: 13px; }
+  .notif-icon {
+    flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; display: flex;
+    align-items: center; justify-content: center; font-size: 14px;
+    background: var(--accent-glow); margin-top: 2px;
+  }
+  /* Create New in Add-to-Collection */
+  .coll-create-new-btn {
+    width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+    background: none; border: 1px dashed var(--border); border-radius: 8px;
+    color: var(--accent); font-size: 13px; cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s; margin-bottom: 8px;
+  }
+  .coll-create-new-btn:hover { background: var(--accent-glow); border-color: var(--accent); }
+  .coll-create-inline {
+    display: flex; gap: 8px; align-items: center; margin-bottom: 8px; padding: 8px;
+    background: rgba(255,107,53,0.05); border: 1px solid rgba(255,107,53,0.15); border-radius: 8px;
+  }
+  .coll-create-inline input {
+    flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+    padding: 8px 10px; color: var(--text); font-size: 13px; font-family: 'DM Sans', sans-serif; outline: none;
+  }
+  .coll-create-inline input:focus { border-color: var(--accent); }
+  .coll-create-inline button {
+    background: var(--accent); color: #fff; border: none; border-radius: 6px;
+    padding: 8px 14px; font-size: 12px; font-weight: 600; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; white-space: nowrap;
+  }
   .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 400; display: flex; flex-direction: column; gap: 8px; }
   .toast {
     background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
@@ -416,6 +495,7 @@
     .coll-chip { font-size: 12px; padding: 5px 10px; }
     .header { flex-direction: column; gap: 12px; text-align: center; }
     .header-right { justify-content: center; }
+    .notif-panel { width: calc(100vw - 32px); right: -60px; }
     .collab-invite-row { flex-direction: column; }
     .collab-role-select { min-width: auto; }
     .modal-box { margin: 16px; padding: 20px 24px; }
@@ -529,6 +609,21 @@
     <div><div class="logo">dopo</div><div class="logo-sub">content library</div></div>
     <div class="header-right">
       <span id="userBadge" class="user-badge"></span>
+      <div style="position:relative;">
+        <button class="notif-bell" id="notifBell" onclick="toggleNotifPanel()" title="Notifications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span id="notifBadge" class="notif-badge hidden"></span>
+        </button>
+        <div class="notif-panel" id="notifPanel">
+          <div class="notif-panel-header">
+            <h4>Notifications</h4>
+            <button class="notif-mark-read" id="notifMarkAllRead" onclick="markAllNotificationsRead()">Mark all read</button>
+          </div>
+          <div class="notif-list" id="notifList">
+            <div class="notif-empty">No notifications yet</div>
+          </div>
+        </div>
+      </div>
       <button class="sign-out-btn" onclick="handleSignOut()">Sign Out</button>
     </div>
   </header>
@@ -823,6 +918,7 @@ async function checkExistingSession() {
 }
 
 function handleSignOut() {
+  stopNotifPolling();
   accessToken = null;
   currentUser = null;
   currentCollection = "all";
@@ -843,6 +939,7 @@ function showApp() {
   document.getElementById("userBadge").textContent = currentUser?.email || "";
   loadCollections();
   loadLibrary();
+  startNotifPolling();
 }
 
 async function handleIngest() {
@@ -1252,21 +1349,67 @@ function openAddToCollModal(saveId) {
   addToCollSaveId = saveId;
   const modal = document.getElementById("addToCollModal");
   const list = document.getElementById("addToCollList");
-  // Filter to collections user can edit (owned or editor role)
   const editableColls = collections.filter(c => c.is_owner || c.role === 'editor');
+
+  // "Create New" button always at top
+  let html = `<button class="coll-create-new-btn" id="collCreateNewBtn" onclick="showInlineCreateCollection()">
+    <span style="font-size:16px;">+</span> Create new collection
+  </button>
+  <div id="collCreateInlineWrap"></div>`;
+
   if (editableColls.length === 0) {
-    list.innerHTML = `<div style="color:var(--text-dim);padding:16px;text-align:center;">No collections yet. Create one first!</div>`;
+    html += `<div style="color:var(--text-dim);padding:12px 0;text-align:center;font-size:13px;">No collections yet — create one above!</div>`;
   } else {
-    list.innerHTML = editableColls.map(c => {
+    html += editableColls.map(c => {
       const sharedLabel = !c.is_owner ? ' <span style="font-size:10px;color:var(--text-dim);">(shared)</span>' : '';
       return `<button class="card-coll-dropdown-item" id="coll-toggle-${c.id}" onclick="toggleSaveInCollection('${saveId}','${c.id}', this)">
         <span class="coll-check" id="coll-check-${c.id}">–</span>
         ${c.emoji || '✦'} ${esc(c.name)}${sharedLabel}
       </button>`;
     }).join("");
-    checkMemberships(saveId);
   }
+
+  list.innerHTML = html;
+  if (editableColls.length > 0) checkMemberships(saveId);
   modal.classList.remove("hidden");
+}
+
+function showInlineCreateCollection() {
+  const wrap = document.getElementById("collCreateInlineWrap");
+  const btn = document.getElementById("collCreateNewBtn");
+  btn.style.display = "none";
+  wrap.innerHTML = `<div class="coll-create-inline">
+    <input id="inlineCollEmoji" type="text" placeholder="📁" maxlength="2" style="width:44px;text-align:center;font-size:18px;flex:none;" />
+    <input id="inlineCollName" type="text" placeholder="Collection name" autofocus onkeydown="if(event.key==='Enter')createAndAddToCollection()" />
+    <button onclick="createAndAddToCollection()">Create</button>
+  </div>`;
+  setTimeout(() => document.getElementById("inlineCollName").focus(), 50);
+}
+
+async function createAndAddToCollection() {
+  const name = document.getElementById("inlineCollName").value.trim();
+  if (!name) return;
+  const emoji = document.getElementById("inlineCollEmoji").value.trim() || "📁";
+  const saveId = addToCollSaveId;
+
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/library/collections`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}`, apikey: SUPABASE_ANON_KEY },
+      body: JSON.stringify({ action: "create_and_add_save", name, emoji, save_id: saveId })
+    });
+    const data = await resp.json();
+    if (resp.ok && data.success) {
+      showToast(`Added to "${name}"`, "success");
+      // Refresh collections and re-render the modal
+      await loadCollections();
+      openAddToCollModal(saveId);
+    } else {
+      showToast(data.error || "Failed to create collection", "error");
+    }
+  } catch (e) {
+    showToast("Network error", "error");
+  }
 }
 
 function checkMemberships(saveId) {
@@ -1784,6 +1927,124 @@ async function executeSaveDelete(saveId) {
   } catch (e) {
     showToast("Network error", "error");
   }
+}
+
+// ─── NOTIFICATIONS ───
+let notifPanelOpen = false;
+let notifPollInterval = null;
+
+function toggleNotifPanel() {
+  const panel = document.getElementById("notifPanel");
+  notifPanelOpen = !notifPanelOpen;
+  panel.classList.toggle("open", notifPanelOpen);
+  if (notifPanelOpen) loadNotifications();
+}
+
+// Close panel when clicking outside
+document.addEventListener("click", (e) => {
+  if (!notifPanelOpen) return;
+  const bell = document.getElementById("notifBell");
+  const panel = document.getElementById("notifPanel");
+  if (!bell.contains(e.target) && !panel.contains(e.target)) {
+    notifPanelOpen = false;
+    panel.classList.remove("open");
+  }
+});
+
+async function loadNotifications() {
+  if (!accessToken) return;
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/library/notifications?limit=20`, {
+      headers: { Authorization: `Bearer ${accessToken}`, apikey: SUPABASE_ANON_KEY }
+    });
+    if (!resp.ok) return;
+    const data = await resp.json();
+    renderNotifications(data.notifications || [], data.unread_count || 0);
+  } catch (e) { console.warn("[Notifications] Failed to load:", e); }
+}
+
+async function pollUnreadCount() {
+  if (!accessToken) return;
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/library/notifications?limit=1`, {
+      headers: { Authorization: `Bearer ${accessToken}`, apikey: SUPABASE_ANON_KEY }
+    });
+    if (!resp.ok) return;
+    const data = await resp.json();
+    updateBadge(data.unread_count || 0);
+  } catch (e) { /* silent */ }
+}
+
+function updateBadge(count) {
+  const badge = document.getElementById("notifBadge");
+  if (count > 0) {
+    badge.textContent = count > 9 ? "9+" : count;
+    badge.classList.remove("hidden");
+  } else {
+    badge.classList.add("hidden");
+  }
+}
+
+function renderNotifications(notifications, unreadCount) {
+  const list = document.getElementById("notifList");
+  const markBtn = document.getElementById("notifMarkAllRead");
+  updateBadge(unreadCount);
+  markBtn.style.display = unreadCount > 0 ? "block" : "none";
+
+  if (notifications.length === 0) {
+    list.innerHTML = `<div class="notif-empty">No notifications yet</div>`;
+    return;
+  }
+
+  list.innerHTML = notifications.map(n => {
+    const icon = n.type === "collection_save_added" ? "📥"
+      : n.type === "collaborator_invited" ? "🤝"
+      : n.type === "collaborator_accepted" ? "✅" : "🔔";
+    const timeAgo = formatTimeAgo(n.created_at);
+    return `<div class="notif-item${n.is_read ? "" : " unread"}">
+      <div class="notif-icon">${icon}</div>
+      <div class="notif-content">
+        <div class="notif-title">${esc(n.title)}</div>
+        ${n.body ? `<div class="notif-time">${esc(n.body)}</div>` : ""}
+        <div class="notif-time">${timeAgo}</div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function formatTimeAgo(dateStr) {
+  const now = new Date();
+  const d = new Date(dateStr);
+  const diffMs = now - d;
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+async function markAllNotificationsRead() {
+  try {
+    await fetch(`${SUPABASE_URL}/functions/v1/library/notifications`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}`, apikey: SUPABASE_ANON_KEY },
+      body: JSON.stringify({ action: "mark_all_read" })
+    });
+    loadNotifications();
+  } catch (e) { console.warn("[Notifications] Failed to mark read:", e); }
+}
+
+function startNotifPolling() {
+  if (notifPollInterval) clearInterval(notifPollInterval);
+  pollUnreadCount();
+  notifPollInterval = setInterval(pollUnreadCount, 30000); // every 30s
+}
+
+function stopNotifPolling() {
+  if (notifPollInterval) { clearInterval(notifPollInterval); notifPollInterval = null; }
 }
 
 // ─── TOAST SYSTEM ───
