@@ -480,7 +480,15 @@
     .card-title { font-size: 12px; -webkit-line-clamp: 2; color: #fff; margin-bottom: 0; line-height: 1.3; }
     .card-creator { display: none; }
     .card-tags { display: none; }
-    .card-meta { display: none; }
+    .card-meta {
+      position: absolute; bottom: 0; right: 0; z-index: 5;
+      margin: 0; padding: 6px 8px; border: none;
+      background: transparent;
+    }
+    .card-meta .card-date { display: none; }
+    .card-meta .card-actions { gap: 2px; }
+    .card-meta .card-action { color: rgba(255,255,255,0.8); font-size: 16px; padding: 4px; }
+    .card-meta .card-action:hover { color: #fff; }
     .card-enrichment { z-index: 4; }
     .card:hover { transform: none; box-shadow: none; }
     /* Square skeleton cards on mobile */
