@@ -1,0 +1,21 @@
+# macOS
+.DS_Store
+*.swp
+
+# Xcode user data
+DopoApp/DopoApp.xcodeproj/xcuserdata/
+DopoApp/DopoApp.xcodeproj/project.xcworkspace/xcuserdata/
+DopoApp/DopoApp.xcodeproj/project.xcworkspace/xcshareddata/
+
+# Build products
+DerivedData/
+build/
+*.ipa
+
+# CocoaPods / SPM
+Pods/
+.build/
+
+# Environment
+.env
+.env.local

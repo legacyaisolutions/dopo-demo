@@ -9,6 +9,7 @@ enum DopoConfig {
     static let ingestURL = "\(supabaseURL)/functions/v1/ingest"
     static let smartSearchURL = "\(supabaseURL)/functions/v1/smart-search"
     static let configURL = "\(supabaseURL)/functions/v1/config"
+    static let notificationsURL = "\(supabaseURL)/functions/v1/notifications"
     static let authURL = "\(supabaseURL)/auth/v1"
 
     // App metadata — used for feature flags and version enforcement
