@@ -481,13 +481,11 @@
     .card-creator { display: none; }
     .card-tags { display: none; }
     .card-meta {
-      position: absolute; bottom: 0; right: 0; z-index: 5;
-      margin: 0; padding: 6px 8px; border: none;
-      background: transparent;
+      display: flex; margin-top: 6px; padding-top: 0; border: none;
     }
-    .card-meta .card-date { display: none; }
+    .card-meta .card-date { font-size: 10px; color: rgba(255,255,255,0.6); }
     .card-meta .card-actions { gap: 2px; }
-    .card-meta .card-action { color: rgba(255,255,255,0.8); font-size: 16px; padding: 4px; }
+    .card-meta .card-action { color: rgba(255,255,255,0.8); font-size: 14px; padding: 2px 4px; }
     .card-meta .card-action:hover { color: #fff; }
     .card-enrichment { z-index: 4; }
     .card:hover { transform: none; box-shadow: none; }
