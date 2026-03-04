@@ -214,7 +214,7 @@
   }
   .coll-chip-add:hover { border-color: var(--accent); color: var(--accent); }
   /* Collections Grid (iOS-style) */
-  .collections-section { margin-bottom: 28px; padding: 8px 0 60px; width: 100%; box-sizing: border-box; }
+  .collections-section { margin-bottom: 28px; padding: 8px 0 60px; max-width: 100%; overflow: hidden; }
   .collections-section-header {
     display: flex; align-items: center; justify-content: space-between;
     margin-bottom: 14px; padding: 0 2px;
@@ -979,10 +979,9 @@
     <h3>No saves yet</h3>
     <p>Paste a URL above to start building your content library. Dopo extracts metadata automatically from YouTube, Instagram, TikTok, X, Facebook, and more.</p>
   </div>
-</div>
 </div><!-- /libraryView -->
 <!-- Collections View -->
-<div id="collectionsView" style="display: none; width: 100%;">
+<div id="collectionsView" style="display: none;">
   <div id="collectionsSection" class="collections-section"></div>
 </div>
 <!-- Discover View -->
@@ -1060,6 +1059,7 @@
     </div>
   </div>
 </div>
+</div><!-- /app -->
 <!-- Create Collection Modal -->
 <div id="createCollModal" class="modal-overlay hidden">
   <div class="modal-box">
