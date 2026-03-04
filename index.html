@@ -33,10 +33,10 @@
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
   }
-  .app { max-width: 900px; margin: 0 auto; padding: 24px 20px 100px; }
+  .app { max-width: 900px; margin: 0 auto; padding: 20px 20px 100px; }
   .header {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 16px 0 32px; border-bottom: 1px solid var(--border); margin-bottom: 32px;
+    padding: 16px 0 24px; border-bottom: 1px solid var(--border); margin-bottom: 24px;
   }
   .logo {
     font-family: 'Space Mono', monospace; font-size: 28px; font-weight: 700;
@@ -53,7 +53,7 @@
     transition: all 0.2s;
   }
   .sign-out-btn:hover { color: var(--error); border-color: var(--error); background: rgba(248,113,113,0.08); }
-  .ingest-section { margin-bottom: 32px; }
+  .ingest-section { margin-bottom: 24px; }
   .ingest-bar { display: flex; gap: 10px; align-items: stretch; }
   .ingest-input {
     flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
@@ -65,9 +65,10 @@
   .ingest-btn {
     background: var(--accent); color: #fff; border: none; border-radius: var(--radius);
     padding: 14px 24px; font-size: 15px; font-weight: 600; font-family: 'DM Sans', sans-serif;
-    cursor: pointer; transition: all 0.2s; white-space: nowrap; display: flex; align-items: center; gap: 8px;
+    cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); white-space: nowrap; display: flex; align-items: center; gap: 8px;
   }
-  .ingest-btn:hover:not(:disabled) { background: #ff8555; transform: translateY(-1px); box-shadow: 0 4px 16px var(--accent-glow); }
+  .ingest-btn:hover:not(:disabled) { background: #ff8555; transform: translateY(-2px); box-shadow: 0 6px 20px var(--accent-glow); }
+  .ingest-btn:active:not(:disabled) { transform: translateY(0); box-shadow: 0 2px 8px var(--accent-glow); }
   .ingest-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .ingest-coll-picker {
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
@@ -93,22 +94,23 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%235a5a72' viewBox='0 0 24 24'%3E%3Cpath d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' stroke='%235a5a72' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat; background-position: 12px center;
   }
-  .search-input:focus { border-color: var(--accent); }
+  .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
   .filter-btn {
     background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
     padding: 8px 14px; color: var(--text-muted); font-size: 13px; font-family: 'DM Sans', sans-serif;
-    cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px;
+    cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); display: inline-flex; align-items: center; gap: 6px;
   }
-  .filter-btn:hover { background: var(--surface-hover); color: var(--text); }
+  .filter-btn:hover { background: var(--surface-hover); color: var(--text); transform: translateY(-1px); }
+  .filter-btn:active { transform: translateY(0); }
   .filter-btn.active { background: var(--accent-glow); color: var(--accent); border-color: var(--accent); }
   .filter-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
   .stats-bar { font-size: 12px; color: var(--text-dim); margin-bottom: 16px; font-family: 'Space Mono', monospace; }
   .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
   .card {
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-    overflow: hidden; transition: all 0.2s; cursor: default; position: relative;
+    overflow: hidden; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); cursor: default; position: relative;
   }
-  .card:hover { border-color: #3a3a4d; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+  .card:hover { border-color: #3a3a4d; transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.35); }
   .card-thumb-wrap { position: relative; width: 100%; height: 160px; overflow: hidden; }
   .card-thumb-wrap .card-thumb-placeholder { position: absolute; inset: 0; }
   .card-thumb-wrap .card-thumb { position: relative; z-index: 1; }
@@ -148,8 +150,9 @@
   .card-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
   .card-date { font-size: 11px; color: var(--text-dim); font-family: 'Space Mono', monospace; }
   .card-actions { display: flex; gap: 6px; align-items: center; }
-  .card-action { background: none; border: none; color: var(--text-dim); cursor: pointer; padding: 4px 6px; border-radius: 4px; font-size: 14px; transition: all 0.15s; }
-  .card-action:hover { color: var(--text); background: var(--surface-hover); }
+  .card-action { background: none; border: none; color: var(--text-dim); cursor: pointer; padding: 5px 7px; border-radius: 6px; font-size: 14px; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+  .card-action:hover { color: var(--text); background: var(--surface-hover); transform: scale(1.1); }
+  .card-action:active { transform: scale(0.95); }
   .card-action.favorited { color: var(--accent); }
   .card-link { font-size: 11px; color: var(--accent); text-decoration: none; font-weight: 500; transition: opacity 0.15s; }
   .card-link:hover { opacity: 0.8; }
@@ -210,15 +213,218 @@
     background: none; border: 1px dashed var(--border); color: var(--text-dim);
   }
   .coll-chip-add:hover { border-color: var(--accent); color: var(--accent); }
+  /* Collections Grid (iOS-style) */
+  .collections-section { margin-bottom: 28px; }
+  .collections-section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px; padding: 0 2px;
+  }
+  .collections-section-title {
+    font-size: 11px; font-weight: 700; color: var(--text-dim);
+    font-family: 'Space Mono', monospace; text-transform: uppercase; letter-spacing: 1.5px;
+  }
+  .collections-section-count {
+    font-size: 11px; font-weight: 600; color: var(--text-dim);
+    font-family: 'Space Mono', monospace; background: var(--surface-hover);
+    padding: 2px 8px; border-radius: 6px;
+  }
+  .collections-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;
+  }
+  .coll-card {
+    position: relative; border-radius: 14px; overflow: hidden;
+    background: var(--surface); border: 1px solid var(--border);
+    cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .coll-card:hover { border-color: #3a3a4d; transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.35); }
+  .coll-card-mosaic {
+    position: relative; width: 100%; aspect-ratio: 1; overflow: hidden;
+  }
+  .coll-card-mosaic-grid {
+    display: grid; width: 100%; height: 100%; gap: 2px;
+  }
+  .coll-card-mosaic-grid.grid-4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+  .coll-card-mosaic-grid.grid-2 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
+  .coll-card-mosaic-grid.grid-1 { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+  .coll-card-mosaic-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .coll-card-mosaic-empty {
+    width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+    font-size: 32px; background: linear-gradient(135deg, var(--surface-hover) 0%, var(--surface) 100%);
+  }
+  .coll-card-gradient {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 60%;
+    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);
+    pointer-events: none;
+  }
+  .coll-card-info {
+    position: absolute; bottom: 0; left: 0; right: 0; padding: 12px 14px;
+    pointer-events: none;
+  }
+  .coll-card-name {
+    font-size: 14px; font-weight: 700; color: #fff; line-height: 1.3;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5); margin-bottom: 4px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .coll-card-meta {
+    display: flex; align-items: center; gap: 8px; font-size: 11px;
+  }
+  .coll-card-saves { color: rgba(255,255,255,0.75); font-weight: 500; }
+  .coll-card-badge {
+    display: inline-flex; align-items: center; gap: 3px;
+    color: var(--accent); font-size: 9px; font-weight: 600;
+    background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 4px;
+  }
+  .coll-card-new {
+    display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px;
+    border: 1px dashed var(--border); border-radius: 14px; background: none;
+    cursor: pointer; transition: all 0.2s; color: var(--text-dim);
+    font-family: 'DM Sans', sans-serif; aspect-ratio: 1; font-size: 13px;
+  }
+  .coll-card-new:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+  .coll-card-new-icon { font-size: 24px; opacity: 0.7; }
+  /* All Saves hero card */
+  .coll-hero-card {
+    position: relative; border-radius: 14px; overflow: hidden;
+    background: linear-gradient(135deg, rgba(255,107,53,0.2) 0%, rgba(255,107,53,0.03) 100%);
+    border: 1px solid rgba(255,107,53,0.15); cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); padding: 16px; min-height: 90px;
+    display: flex; align-items: flex-end;
+  }
+  .coll-hero-card:hover { border-color: rgba(255,107,53,0.35); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,107,53,0.1); }
+  .coll-hero-dots {
+    position: absolute; top: 12px; right: 12px; display: grid;
+    grid-template-columns: repeat(6, 6px); gap: 8px; opacity: 0.3;
+  }
+  .coll-hero-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .coll-hero-info {}
+  .coll-hero-icon { font-size: 18px; color: var(--accent); margin-bottom: 6px; }
+  .coll-hero-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .coll-hero-sub { font-size: 12px; color: var(--text-muted); }
+  /* Active collection filter bar */
+  .coll-active-bar {
+    display: flex; align-items: center; gap: 10px; padding: 10px 14px; margin-bottom: 16px;
+    background: var(--accent-glow); border: 1px solid rgba(255,107,53,0.2); border-radius: 10px;
+  }
+  .coll-active-name { font-size: 14px; font-weight: 600; color: var(--accent); }
+  .coll-active-back {
+    background: none; border: none; color: var(--text-muted); cursor: pointer;
+    font-size: 13px; font-family: 'DM Sans', sans-serif; padding: 4px 8px; border-radius: 6px;
+    transition: all 0.15s;
+  }
+  .coll-active-back:hover { color: var(--text); background: var(--surface-hover); }
+  .coll-active-actions { margin-left: auto; display: flex; gap: 6px; }
+  /* Shimmer animation */
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .shimmer-box {
+    background: linear-gradient(90deg, var(--surface-hover) 25%, rgba(42,42,61,0.5) 50%, var(--surface-hover) 75%);
+    background-size: 200% 100%; animation: shimmer 1.5s ease-in-out infinite; border-radius: 8px;
+  }
+  .coll-skeleton-card {
+    border-radius: 14px; overflow: hidden; background: var(--surface); border: 1px solid var(--border);
+  }
+  .coll-skeleton-mosaic {
+    width: 100%; aspect-ratio: 1;
+    background: linear-gradient(90deg, var(--surface-hover) 25%, rgba(42,42,61,0.5) 50%, var(--surface-hover) 75%);
+    background-size: 200% 100%; animation: shimmer 1.5s ease-in-out infinite;
+  }
+  .coll-skeleton-text { padding: 12px 14px; }
+  .coll-skeleton-line {
+    height: 12px; border-radius: 4px;
+    background: linear-gradient(90deg, var(--surface-hover) 25%, rgba(42,42,61,0.5) 50%, var(--surface-hover) 75%);
+    background-size: 200% 100%; animation: shimmer 1.5s ease-in-out infinite;
+  }
+  .coll-skeleton-line.short { width: 60%; margin-bottom: 6px; }
+  .coll-skeleton-line.tiny { width: 35%; height: 10px; }
+  /* Navigation Tabs */
+  .nav-tabs {
+    display: flex; gap: 4px; margin-bottom: 24px; padding: 4px;
+    background: var(--surface); border-radius: 12px; border: 1px solid var(--border);
+  }
+  .nav-tab {
+    flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 10px 16px; border-radius: 9px; font-size: 14px; font-weight: 500;
+    font-family: 'DM Sans', sans-serif; cursor: pointer;
+    background: none; border: none; color: var(--text-muted);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .nav-tab:hover { color: var(--text); background: var(--surface-hover); }
+  .nav-tab.active {
+    color: var(--accent); background: var(--accent-glow);
+    font-weight: 600;
+  }
+  .nav-tab svg { flex-shrink: 0; }
+  /* Discover Page */
+  .discover-page {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 20px 0 60px; text-align: center;
+  }
+  .discover-hero { margin-bottom: 32px; }
+  .discover-hero-circle {
+    width: 88px; height: 88px; border-radius: 50%;
+    background: var(--accent-glow); display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px; color: var(--accent);
+  }
+  .discover-title {
+    font-family: 'Space Mono', monospace; font-size: 28px; font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), #ff9a6c);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+  }
+  .discover-badge {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    font-family: 'Space Mono', monospace; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--accent);
+    background: var(--accent-glow); padding: 4px 14px; border-radius: 20px;
+  }
+  .discover-desc { max-width: 480px; margin-bottom: 36px; padding: 0 16px; }
+  .discover-headline {
+    font-size: 18px; font-weight: 600; color: var(--text); line-height: 1.4; margin-bottom: 12px;
+  }
+  .discover-subtext {
+    font-size: 14px; color: var(--text-muted); line-height: 1.65;
+  }
+  .discover-features {
+    width: 100%; max-width: 520px; text-align: left; padding: 0 16px;
+  }
+  .discover-features-label {
+    font-size: 11px; font-weight: 700; color: var(--text-dim);
+    font-family: 'Space Mono', monospace; letter-spacing: 1.5px;
+    margin-bottom: 12px;
+  }
+  .discover-feature-card {
+    display: flex; align-items: flex-start; gap: 14px; padding: 14px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    margin-bottom: 10px; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .discover-feature-card:hover { border-color: #3a3a4d; transform: translateY(-1px); }
+  .discover-feature-icon {
+    width: 44px; height: 44px; border-radius: 10px; background: var(--surface-hover);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    color: var(--accent);
+  }
+  .discover-feature-text { flex: 1; }
+  .discover-feature-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .discover-feature-desc { font-size: 13px; color: var(--text-muted); line-height: 1.4; }
+  .discover-cta {
+    margin-top: 32px; padding: 0 32px;
+  }
+  .discover-cta p { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
   /* Collection modal */
   .modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex;
-    align-items: center; justify-content: center; z-index: 200; backdrop-filter: blur(6px);
+    align-items: center; justify-content: center; z-index: 200; backdrop-filter: blur(8px);
+    animation: fadeIn 0.2s ease-out;
   }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(16px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
   .modal-overlay.hidden { display: none; }
   .modal-box {
     background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
     padding: 28px 32px; width: 100%; max-width: 420px;
+    animation: slideUp 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .modal-box h3 { font-size: 18px; margin-bottom: 16px; color: var(--text); }
   .modal-field {
@@ -233,9 +439,12 @@
     font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.15s;
   }
   .modal-btn-primary { background: var(--accent); color: #fff; border: none; }
-  .modal-btn-primary:hover { background: #ff8555; }
+  .modal-btn-primary:hover { background: #ff8555; transform: translateY(-1px); box-shadow: 0 4px 12px var(--accent-glow); }
+  .modal-btn-primary:active { transform: translateY(0); }
   .modal-btn-secondary { background: none; color: var(--text-muted); border: 1px solid var(--border); }
   .modal-btn-secondary:hover { background: var(--surface-hover); }
+  .modal-btn-danger { background: var(--error); color: #fff; border: none; }
+  .modal-btn-danger:hover { background: #ef5656; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(248,113,113,0.2); }
   /* Add-to-collection dropdown on cards */
   .card-coll-btn { position: relative; }
   .card-coll-dropdown {
@@ -445,22 +654,26 @@
   .toast-icon { font-size: 16px; flex-shrink: 0; }
   @keyframes toastIn { from { opacity: 0; transform: translateY(12px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
   @keyframes toastOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-8px); } }
-  /* Loading skeleton */
+  /* Loading skeleton with shimmer */
   .skeleton-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
   .skeleton-card {
     background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
     overflow: hidden;
   }
-  .skeleton-thumb { width: 100%; height: 160px; background: var(--surface-hover); }
+  .skeleton-thumb {
+    width: 100%; height: 160px;
+    background: linear-gradient(90deg, var(--surface-hover) 25%, rgba(42,42,61,0.5) 50%, var(--surface-hover) 75%);
+    background-size: 200% 100%; animation: shimmer 1.5s ease-in-out infinite;
+  }
   .skeleton-body { padding: 14px 16px 16px; }
   .skeleton-line {
-    height: 12px; border-radius: 6px; background: linear-gradient(90deg, var(--surface-hover) 25%, #252538 50%, var(--surface-hover) 75%);
-    background-size: 200% 100%; animation: shimmer 1.5s infinite; margin-bottom: 10px;
+    height: 12px; border-radius: 6px;
+    background: linear-gradient(90deg, var(--surface-hover) 25%, rgba(42,42,61,0.5) 50%, var(--surface-hover) 75%);
+    background-size: 200% 100%; animation: shimmer 1.5s ease-in-out infinite; margin-bottom: 10px;
   }
   .skeleton-line.short { width: 40%; }
   .skeleton-line.medium { width: 70%; }
   .skeleton-line.long { width: 100%; }
-  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
   /* ─── BATCH MODE ─── */
   .batch-select-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; color: var(--text-muted); font-size: 13px; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
@@ -679,11 +892,24 @@
       <button class="sign-out-btn" onclick="handleSignOut()">Sign Out</button>
     </div>
   </header>
+  <!-- Navigation Tabs -->
+  <nav class="nav-tabs" id="navTabs">
+    <button class="nav-tab active" data-view="library" onclick="switchView('library', this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Library
+    </button>
+    <button class="nav-tab" data-view="discover" onclick="switchView('discover', this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><path d="M11 8l1.5 3 3.5.5-2.5 2.5.5 3.5L11 16l-3 1.5.5-3.5L6 11.5l3.5-.5z"/></svg>
+      Discover
+    </button>
+  </nav>
+  <!-- Library View -->
+  <div id="libraryView">
   <div class="ingest-section">
     <div class="ingest-bar">
       <input id="ingestInput" class="ingest-input" type="url" placeholder="Paste a URL from YouTube, Instagram, TikTok, X, Facebook..." onkeydown="if(event.key==='Enter')handleIngest()" />
       <select id="ingestCollectionPicker" class="ingest-coll-picker" title="Save to collection">
-        <option value="">No folder</option>
+        <option value="">No collection</option>
       </select>
       <button id="ingestBtn" class="ingest-btn" onclick="handleIngest()"><span id="ingestBtnText">Save</span></button>
     </div>
@@ -733,23 +959,16 @@
       <button class="batch-btn-select-all" id="batchSelectAllBtn" onclick="batchSelectAll()">Select all</button>
     </div>
     <div class="batch-bar-actions">
-      <button class="batch-btn" onclick="batchAddToCollection()" title="Add to collection">📁 <span class="batch-btn-label">Collection</span></button>
+      <button class="batch-btn" onclick="batchAddToCollection()" title="Add to collection">✦ <span class="batch-btn-label">Collection</span></button>
       <button class="batch-btn" onclick="batchFavorite()" title="Favorite all">★ <span class="batch-btn-label">Favorite</span></button>
       <button class="batch-btn danger" onclick="batchDelete()" title="Delete all">🗑 <span class="batch-btn-label">Delete</span></button>
       <button class="batch-btn-cancel" onclick="toggleBatchMode()">Cancel</button>
     </div>
   </div>
-  <div id="collectionsBar" class="collections-bar" style="display: none;">
-    <span class="collections-bar-label">Collections</span>
-    <button class="coll-chip active" data-coll="all" onclick="setCollection('all')">All Saves</button>
-    <div id="collChips"></div>
-    <button class="coll-chip-add" onclick="openCreateCollectionModal()">+ New</button>
-    <div class="coll-manage-bar" id="collManageBar" style="display: none;">
-      <button class="coll-manage-btn share-btn" onclick="openShareModal()">Share</button>
-      <button class="coll-manage-btn rename-btn" onclick="openRenameCollectionModal()" style="color:var(--text-muted);">Rename</button>
-      <button class="coll-manage-btn" onclick="deleteSelectedCollection()">Delete</button>
-    </div>
-  </div>
+  <!-- Collections Grid Section -->
+  <div id="collectionsSection" class="collections-section" style="display: none;"></div>
+  <!-- Active Collection Bar (shown when viewing a specific collection) -->
+  <div id="collActiveBar" class="coll-active-bar" style="display: none;"></div>
   <div id="searchHint" class="search-hint" style="display:none;"></div>
   <div id="statsBar" class="stats-bar"></div>
   <div id="cardsGrid" class="cards-grid"></div>
@@ -757,6 +976,82 @@
     <div class="empty-state-icon">📌</div>
     <h3>No saves yet</h3>
     <p>Paste a URL above to start building your content library. Dopo extracts metadata automatically from YouTube, Instagram, TikTok, X, Facebook, and more.</p>
+  </div>
+</div>
+</div><!-- /libraryView -->
+<!-- Discover View -->
+<div id="discoverView" style="display: none;">
+  <div class="discover-page">
+    <!-- Hero -->
+    <div class="discover-hero">
+      <div class="discover-hero-circle">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="M21 21l-4.35-4.35"/>
+          <path d="M11 8l1.5 3 3.5.5-2.5 2.5.5 3.5L11 16l-3 1.5.5-3.5L6 11.5l3.5-.5z"/>
+        </svg>
+      </div>
+      <h1 class="discover-title">Discover</h1>
+      <span class="discover-badge">Coming Soon</span>
+    </div>
+    <!-- Description -->
+    <div class="discover-desc">
+      <h2 class="discover-headline">See what the people you follow are curating in real time.</h2>
+      <p class="discover-subtext">Discover will show you trending collections, curator activity, and content matched to your taste — all driven by human curation, not algorithms.</p>
+    </div>
+    <!-- Feature Cards -->
+    <div class="discover-features">
+      <div class="discover-features-label">WHAT'S COMING</div>
+      <div class="discover-feature-card">
+        <div class="discover-feature-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div class="discover-feature-text">
+          <div class="discover-feature-title">Activity Stream</div>
+          <div class="discover-feature-desc">See what curators you follow are saving and building</div>
+        </div>
+      </div>
+      <div class="discover-feature-card">
+        <div class="discover-feature-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+        </div>
+        <div class="discover-feature-text">
+          <div class="discover-feature-title">Trending Collections</div>
+          <div class="discover-feature-desc">Discover the most-followed collections across every category</div>
+        </div>
+      </div>
+      <div class="discover-feature-card">
+        <div class="discover-feature-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/><path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/></svg>
+        </div>
+        <div class="discover-feature-text">
+          <div class="discover-feature-title">Vibing</div>
+          <div class="discover-feature-desc">Find curators who share your vibe with AI-powered matching</div>
+        </div>
+      </div>
+      <div class="discover-feature-card">
+        <div class="discover-feature-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><path d="M6 9v12"/></svg>
+        </div>
+        <div class="discover-feature-text">
+          <div class="discover-feature-title">Collection Remixes</div>
+          <div class="discover-feature-desc">Fork any public collection and make it your own</div>
+        </div>
+      </div>
+      <div class="discover-feature-card">
+        <div class="discover-feature-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div class="discover-feature-text">
+          <div class="discover-feature-title">Save Requests</div>
+          <div class="discover-feature-desc">Ask the community for the best saves on any topic</div>
+        </div>
+      </div>
+    </div>
+    <!-- CTA -->
+    <div class="discover-cta">
+      <p>Follow curators now so your feed is ready when Discover launches.</p>
+    </div>
   </div>
 </div>
 <!-- Create Collection Modal -->
@@ -1050,7 +1345,7 @@ async function handleIngest() {
           statusEl.textContent = `Saved to ${collName}! ${displayPlatform} ${s.content_type} — "${(s.title || "untitled").substring(0, 60)}"`;
         } catch (e) {
           statusEl.className = "ingest-status show success";
-          statusEl.textContent = `Saved! (couldn't add to folder) ${displayPlatform} ${s.content_type} — "${(s.title || "untitled").substring(0, 60)}"`;
+          statusEl.textContent = `Saved! (couldn't add to collection) ${displayPlatform} ${s.content_type} — "${(s.title || "untitled").substring(0, 60)}"`;
         }
       } else {
         statusEl.className = "ingest-status show success";
@@ -1064,6 +1359,17 @@ async function handleIngest() {
   btn.disabled = false;
   document.getElementById("ingestBtnText").textContent = "Save";
   setTimeout(() => { statusEl.className = "ingest-status"; }, 5000);
+}
+
+// ─── VIEW SWITCHING ───
+let currentView = "library";
+
+function switchView(view, btn) {
+  currentView = view;
+  document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById("libraryView").style.display = view === "library" ? "block" : "none";
+  document.getElementById("discoverView").style.display = view === "discover" ? "block" : "none";
 }
 
 function toggleBulk() { document.getElementById("bulkArea").classList.toggle("show"); }
@@ -1282,39 +1588,141 @@ function updateIngestCollectionPicker() {
   if (!picker) return;
   const editableColls = collections.filter(c => c.is_owner || c.role === 'editor');
   const prev = picker.value;
-  picker.innerHTML = '<option value="">No folder</option>' +
+  picker.innerHTML = '<option value="">No collection</option>' +
     editableColls.map(c => `<option value="${c.id}">${c.emoji || '✦'} ${esc(c.name)}</option>`).join("");
   if (prev && editableColls.some(c => c.id === prev)) picker.value = prev;
 }
 
 function renderCollectionsBar() {
-  const bar = document.getElementById("collectionsBar");
-  const chips = document.getElementById("collChips");
-  const manageBar = document.getElementById("collManageBar");
-  bar.style.display = "flex";
-  chips.innerHTML = collections.map(c => {
-    const publicIcon = c.is_public ? ' 🔗' : '';
-    let sharedIcon = '';
-    if (!c.is_owner && c.role === 'editor') sharedIcon = ' 👥';
-    else if (!c.is_owner && c.role === 'viewer') sharedIcon = ' 👁️';
-    return `<button class="coll-chip ${currentCollection === c.id ? 'active' : ''}" data-coll="${c.id}" onclick="setCollection('${c.id}')">${c.emoji || '✦'} ${esc(c.name)}${publicIcon}${sharedIcon} <span class="coll-count">${c.save_count}</span></button>`;
-  }).join("");
-  // Update "All Saves" active state
-  document.querySelector('[data-coll="all"]').className = `coll-chip ${currentCollection === 'all' ? 'active' : ''}`;
-  // Show manage bar when a specific collection is selected
+  const section = document.getElementById("collectionsSection");
+  const activeBar = document.getElementById("collActiveBar");
+
+  // When viewing a specific collection, show active bar instead of grid
   if (currentCollection !== "all") {
-    manageBar.style.display = "flex";
+    section.style.display = "none";
     const coll = collections.find(c => c.id === currentCollection);
-    const isOwner = coll?.is_owner;
-    // Share button: only visible to owner
-    const shareBtn = manageBar.querySelector('.share-btn');
-    const renameBtn = manageBar.querySelector('.rename-btn');
-    const deleteBtn = manageBar.querySelector('.coll-manage-btn:not(.share-btn):not(.rename-btn)');
-    if (shareBtn) shareBtn.style.display = isOwner ? 'inline-block' : 'none';
-    if (renameBtn) renameBtn.style.display = isOwner ? 'inline-block' : 'none';
-    if (deleteBtn) deleteBtn.style.display = isOwner ? 'inline-block' : 'none';
-  } else {
-    manageBar.style.display = "none";
+    if (coll) {
+      const isOwner = coll.is_owner;
+      activeBar.style.display = "flex";
+      activeBar.innerHTML = `
+        <button class="coll-active-back" onclick="setCollection('all')">← Collections</button>
+        <span class="coll-active-name">${coll.emoji || '✦'} ${esc(coll.name)}</span>
+        <span style="font-size:11px;color:var(--text-dim);font-family:'Space Mono',monospace;">${coll.save_count || 0} saves</span>
+        <div class="coll-active-actions">
+          ${isOwner ? `<button class="coll-manage-btn share-btn" onclick="openShareModal()">Share</button>` : ''}
+          ${isOwner ? `<button class="coll-manage-btn rename-btn" onclick="openRenameCollectionModal()" style="color:var(--text-muted);">Rename</button>` : ''}
+          ${isOwner ? `<button class="coll-manage-btn" onclick="deleteSelectedCollection()">Delete</button>` : ''}
+        </div>
+      `;
+    }
+    return;
+  }
+
+  // Show collections grid
+  activeBar.style.display = "none";
+  section.style.display = "block";
+
+  const owned = collections.filter(c => c.is_owner !== false);
+  const shared = collections.filter(c => c.is_owner === false);
+
+  let html = '';
+
+  // All Saves hero card
+  html += `<div class="coll-hero-card" onclick="setCollection('all')">
+    <div class="coll-hero-dots">${Array(18).fill(0).map(() => `<div class="coll-hero-dot" style="opacity:${(Math.random()*0.5+0.1).toFixed(2)}"></div>`).join('')}</div>
+    <div class="coll-hero-info">
+      <div class="coll-hero-icon">⊞</div>
+      <div class="coll-hero-title">All Saves</div>
+      <div class="coll-hero-sub">Your entire library</div>
+    </div>
+  </div>`;
+
+  // My Collections section
+  if (owned.length > 0 || shared.length === 0) {
+    html += `<div style="margin-top:20px;">
+      <div class="collections-section-header">
+        <span class="collections-section-title">My Collections</span>
+        <span class="collections-section-count">${owned.length}</span>
+      </div>
+      <div class="collections-grid">
+        ${owned.map(c => renderCollectionCard(c)).join('')}
+        <button class="coll-card-new" onclick="openCreateCollectionModal()">
+          <span class="coll-card-new-icon">+</span>
+          <span>New Collection</span>
+        </button>
+      </div>
+    </div>`;
+  }
+
+  // Shared With Me section
+  if (shared.length > 0) {
+    html += `<div style="margin-top:20px;">
+      <div class="collections-section-header">
+        <span class="collections-section-title">Shared With Me</span>
+        <span class="collections-section-count">${shared.length}</span>
+      </div>
+      <div class="collections-grid">
+        ${shared.map(c => renderCollectionCard(c)).join('')}
+      </div>
+    </div>`;
+  }
+
+  // If no collections at all, still show the + button
+  if (owned.length === 0 && shared.length === 0) {
+    html += `<div style="margin-top:20px;">
+      <div class="collections-grid">
+        <button class="coll-card-new" onclick="openCreateCollectionModal()">
+          <span class="coll-card-new-icon">+</span>
+          <span>Create your first collection</span>
+        </button>
+      </div>
+    </div>`;
+  }
+
+  section.innerHTML = html;
+  // Load thumbnails for collection cards
+  loadCollectionThumbnails();
+}
+
+function renderCollectionCard(coll) {
+  const badges = [];
+  if (coll.is_public) badges.push('<span class="coll-card-badge">🔗 Public</span>');
+  if (!coll.is_owner && coll.role === 'editor') badges.push('<span class="coll-card-badge">✏️ Editor</span>');
+  if (!coll.is_owner && coll.role === 'viewer') badges.push('<span class="coll-card-badge">👁 Viewer</span>');
+
+  return `<div class="coll-card" data-coll-id="${coll.id}" onclick="setCollection('${coll.id}')">
+    <div class="coll-card-mosaic" id="coll-mosaic-${coll.id}">
+      <div class="coll-card-mosaic-empty">${coll.emoji || '✦'}</div>
+    </div>
+    <div class="coll-card-gradient"></div>
+    <div class="coll-card-info">
+      <div class="coll-card-name">${esc(coll.name)}</div>
+      <div class="coll-card-meta">
+        <span class="coll-card-saves">${coll.save_count || 0} saves</span>
+        ${badges.join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+async function loadCollectionThumbnails() {
+  // For each collection card, try to fetch a few saves to get thumbnails
+  for (const coll of collections) {
+    const mosaicEl = document.getElementById(`coll-mosaic-${coll.id}`);
+    if (!mosaicEl || (coll.save_count || 0) === 0) continue;
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/library?limit=4&collection=${coll.id}`, {
+        headers: { Authorization: `Bearer ${accessToken}`, apikey: SUPABASE_ANON_KEY }
+      });
+      const data = await resp.json();
+      const saves = (data.saves || []).filter(s => s.thumbnail_url);
+      if (saves.length === 0) continue;
+      const thumbs = saves.slice(0, 4).map(s => s.thumbnail_url);
+      const gridClass = thumbs.length >= 4 ? 'grid-4' : thumbs.length >= 2 ? 'grid-2' : 'grid-1';
+      mosaicEl.innerHTML = `<div class="coll-card-mosaic-grid ${gridClass}">
+        ${thumbs.map(url => `<img class="coll-card-mosaic-img" src="${esc(url)}" alt="" loading="lazy" onerror="this.style.display='none'" />`).join('')}
+      </div>`;
+    } catch (e) { /* silent — keep emoji placeholder */ }
   }
 }
 
@@ -1453,7 +1861,7 @@ function showInlineCreateCollection() {
   const btn = document.getElementById("collCreateNewBtn");
   btn.style.display = "none";
   wrap.innerHTML = `<div class="coll-create-inline">
-    <input id="inlineCollEmoji" type="text" placeholder="📁" maxlength="2" style="width:44px;text-align:center;font-size:18px;flex:none;" />
+    <input id="inlineCollEmoji" type="text" placeholder="✦" maxlength="2" style="width:44px;text-align:center;font-size:18px;flex:none;" />
     <input id="inlineCollName" type="text" placeholder="Collection name" autofocus onkeydown="if(event.key==='Enter')createAndAddToCollection()" />
     <button onclick="createAndAddToCollection()">Create</button>
   </div>`;
@@ -1463,7 +1871,7 @@ function showInlineCreateCollection() {
 async function createAndAddToCollection() {
   const name = document.getElementById("inlineCollName").value.trim();
   if (!name) return;
-  const emoji = document.getElementById("inlineCollEmoji").value.trim() || "📁";
+  const emoji = document.getElementById("inlineCollEmoji").value.trim() || "✦";
   const saveId = addToCollSaveId;
 
   try {
@@ -1705,7 +2113,7 @@ function renderSharedView(data) {
       </div>
     </header>
     <div style="margin-bottom:24px;">
-      <h2 style="font-size:22px;margin-bottom:4px;">${coll.emoji || '📁'} ${esc(coll.name)}</h2>
+      <h2 style="font-size:22px;margin-bottom:4px;">${coll.emoji || '✦'} ${esc(coll.name)}</h2>
       ${coll.description ? `<p style="color:var(--text-muted);font-size:14px;">${esc(coll.description)}</p>` : ''}
       <div class="stats-bar" style="margin-top:8px;">${saves.length} save${saves.length !== 1 ? 's' : ''}</div>
     </div>
@@ -1773,7 +2181,7 @@ function openRenameCollectionModal() {
   const coll = collections.find(c => c.id === currentCollection);
   if (!coll || !coll.is_owner) return;
   document.getElementById("renameCollName").value = coll.name;
-  document.getElementById("renameCollEmoji").value = coll.emoji || "📁";
+  document.getElementById("renameCollEmoji").value = coll.emoji || "✦";
   document.getElementById("renameCollModal").classList.remove("hidden");
   setTimeout(() => document.getElementById("renameCollName").focus(), 100);
 }
@@ -1784,7 +2192,7 @@ function closeRenameCollectionModal() {
 
 async function renameCollection() {
   const name = document.getElementById("renameCollName").value.trim();
-  const emoji = document.getElementById("renameCollEmoji").value.trim() || "📁";
+  const emoji = document.getElementById("renameCollEmoji").value.trim() || "✦";
   if (!name || currentCollection === "all") return;
   try {
     const resp = await fetch(`${SUPABASE_URL}/functions/v1/library/collections`, {
@@ -2079,7 +2487,7 @@ async function batchAddToCollection() {
         <h3>Add ${count} save${count>1?"s":""} to collection</h3>
         <div style="max-height:300px;overflow-y:auto;margin:12px 0;">
           ${colls.length === 0 ? '<p style="color:var(--text-dim)">No collections yet. Create one first.</p>' :
-            colls.map(c => `<button class="coll-chip" style="display:block;width:100%;text-align:left;margin-bottom:6px;padding:10px 14px;" onclick="executeBatchAddToCollection('${c.id}')">${c.emoji||'📁'} ${esc(c.name)} <span style="color:var(--text-dim);font-size:11px;">(${c.save_count} saves)</span></button>`).join("")}
+            colls.map(c => `<button class="coll-chip" style="display:block;width:100%;text-align:left;margin-bottom:6px;padding:10px 14px;" onclick="executeBatchAddToCollection('${c.id}')">${c.emoji||'✦'} ${esc(c.name)} <span style="color:var(--text-dim);font-size:11px;">(${c.save_count} saves)</span></button>`).join("")}
         </div>
         <div class="modal-actions">
           <button class="modal-btn modal-btn-secondary" onclick="closeDeleteConfirm()">Cancel</button>
