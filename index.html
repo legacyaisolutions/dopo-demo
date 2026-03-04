@@ -898,6 +898,10 @@
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       Library
     </button>
+    <button class="nav-tab" data-view="collections" onclick="switchView('collections', this)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M2 8h20"/><path d="M10 3v5"/></svg>
+      Collections
+    </button>
     <button class="nav-tab" data-view="discover" onclick="switchView('discover', this)">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/><path d="M11 8l1.5 3 3.5.5-2.5 2.5.5 3.5L11 16l-3 1.5.5-3.5L6 11.5l3.5-.5z"/></svg>
       Discover
@@ -965,8 +969,6 @@
       <button class="batch-btn-cancel" onclick="toggleBatchMode()">Cancel</button>
     </div>
   </div>
-  <!-- Collections Grid Section -->
-  <div id="collectionsSection" class="collections-section" style="display: none;"></div>
   <!-- Active Collection Bar (shown when viewing a specific collection) -->
   <div id="collActiveBar" class="coll-active-bar" style="display: none;"></div>
   <div id="searchHint" class="search-hint" style="display:none;"></div>
@@ -979,6 +981,10 @@
   </div>
 </div>
 </div><!-- /libraryView -->
+<!-- Collections View -->
+<div id="collectionsView" style="display: none;">
+  <div id="collectionsSection" class="collections-section"></div>
+</div>
 <!-- Discover View -->
 <div id="discoverView" style="display: none;">
   <div class="discover-page">
@@ -1367,9 +1373,18 @@ let currentView = "library";
 function switchView(view, btn) {
   currentView = view;
   document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
-  btn.classList.add("active");
+  if (btn) btn.classList.add("active");
+  else document.querySelector(`.nav-tab[data-view="${view}"]`)?.classList.add("active");
   document.getElementById("libraryView").style.display = view === "library" ? "block" : "none";
+  document.getElementById("collectionsView").style.display = view === "collections" ? "block" : "none";
   document.getElementById("discoverView").style.display = view === "discover" ? "block" : "none";
+  // When switching to collections, re-render the grid
+  if (view === "collections") {
+    currentCollection = "all";
+    activeCollectionRole = null;
+    document.getElementById("collActiveBar").style.display = "none";
+    renderCollectionsGrid();
+  }
 }
 
 function toggleBulk() { document.getElementById("bulkArea").classList.toggle("show"); }
@@ -1594,18 +1609,16 @@ function updateIngestCollectionPicker() {
 }
 
 function renderCollectionsBar() {
-  const section = document.getElementById("collectionsSection");
   const activeBar = document.getElementById("collActiveBar");
 
-  // When viewing a specific collection, show active bar instead of grid
+  // When viewing a specific collection in Library view, show the active bar
   if (currentCollection !== "all") {
-    section.style.display = "none";
     const coll = collections.find(c => c.id === currentCollection);
     if (coll) {
       const isOwner = coll.is_owner;
       activeBar.style.display = "flex";
       activeBar.innerHTML = `
-        <button class="coll-active-back" onclick="setCollection('all')">← Collections</button>
+        <button class="coll-active-back" onclick="backToCollections()">← Collections</button>
         <span class="coll-active-name">${coll.emoji || '✦'} ${esc(coll.name)}</span>
         <span style="font-size:11px;color:var(--text-dim);font-family:'Space Mono',monospace;">${coll.save_count || 0} saves</span>
         <div class="coll-active-actions">
@@ -1615,20 +1628,30 @@ function renderCollectionsBar() {
         </div>
       `;
     }
-    return;
+  } else {
+    activeBar.style.display = "none";
   }
 
-  // Show collections grid
-  activeBar.style.display = "none";
-  section.style.display = "block";
+  // Also re-render the collections grid if it's visible
+  if (currentView === "collections") renderCollectionsGrid();
+}
 
+function backToCollections() {
+  currentCollection = "all";
+  activeCollectionRole = null;
+  document.getElementById("collActiveBar").style.display = "none";
+  switchView("collections", null);
+}
+
+function renderCollectionsGrid() {
+  const section = document.getElementById("collectionsSection");
   const owned = collections.filter(c => c.is_owner !== false);
   const shared = collections.filter(c => c.is_owner === false);
 
   let html = '';
 
-  // All Saves hero card
-  html += `<div class="coll-hero-card" onclick="setCollection('all')">
+  // All Saves hero card — navigates to Library showing all saves
+  html += `<div class="coll-hero-card" onclick="viewAllSaves()">
     <div class="coll-hero-dots">${Array(18).fill(0).map(() => `<div class="coll-hero-dot" style="opacity:${(Math.random()*0.5+0.1).toFixed(2)}"></div>`).join('')}</div>
     <div class="coll-hero-info">
       <div class="coll-hero-icon">⊞</div>
@@ -1680,8 +1703,14 @@ function renderCollectionsBar() {
   }
 
   section.innerHTML = html;
-  // Load thumbnails for collection cards
   loadCollectionThumbnails();
+}
+
+function viewAllSaves() {
+  currentCollection = "all";
+  activeCollectionRole = null;
+  switchView("library", null);
+  loadLibrary();
 }
 
 function renderCollectionCard(coll) {
@@ -1738,6 +1767,10 @@ function setCollection(collId) {
     } else {
       activeCollectionRole = null; // owner — full access
     }
+  }
+  // Navigate to Library view to show the collection's saves
+  if (collId !== "all") {
+    switchView("library", null);
   }
   renderCollectionsBar();
   enforceRoleUI();
