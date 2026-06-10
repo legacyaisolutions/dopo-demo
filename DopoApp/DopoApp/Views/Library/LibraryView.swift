@@ -6,6 +6,7 @@ struct LibraryView: View {
     @State private var isLoading = true
     @State private var errorMessage: String?
     @State private var searchText = ""
+    @State private var searchTask: Task<Void, Never>?
     @State private var selectedPlatform = "all"
     @State private var selectedSave: Save?
     @State private var showDeleteConfirm = false
@@ -214,8 +215,10 @@ struct LibraryView: View {
             }
             .searchable(text: $searchText, prompt: "Search your library...")
             .onChange(of: searchText) { _ in
-                Task {
+                searchTask?.cancel()
+                searchTask = Task {
                     try? await Task.sleep(nanoseconds: 300_000_000)
+                    if Task.isCancelled { return }
                     await loadSaves()
                 }
             }

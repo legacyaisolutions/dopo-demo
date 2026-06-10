@@ -2509,7 +2509,7 @@ async function batchAddToCollection() {
   if (selectedIds.size === 0) return;
   // Load collections then show picker modal
   try {
-    const resp = await fetch(`${SUPABASE_URL}/functions/v1/collections`, {
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/library/collections`, {
       headers: { Authorization: `Bearer ${accessToken}`, apikey: SUPABASE_ANON_KEY }
     });
     const data = await resp.json();
@@ -2538,7 +2538,7 @@ async function executeBatchAddToCollection(collectionId) {
   closeDeleteConfirm();
   const ids = [...selectedIds];
   try {
-    const resp = await fetch(`${SUPABASE_URL}/functions/v1/collections`, {
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/library/collections`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}`, apikey: SUPABASE_ANON_KEY },
       body: JSON.stringify({ action: "batch_add_saves", collection_id: collectionId, save_ids: ids }),
