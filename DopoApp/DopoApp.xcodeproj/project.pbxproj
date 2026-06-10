@@ -24,7 +24,9 @@
 		8013CA6E5A475746166CE6BD /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56065E6F51E04D7B71EB8CA2 /* NotificationManager.swift */; };
 		813C2C6280D38C2D3F71A064 /* DopoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2F24B1162358164D965718B /* DopoApp.swift */; };
 		8EC256FBE12E4179E26E6E6D /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6429F4CDD17C668D5A32B44 /* APIClient.swift */; };
+		9141C6B08EB96720C4F7E397 /* OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = F39BC4924061953F5D4D6B9D /* OFL.txt */; };
 		9BBE1ECE11758B5D437156AA /* IngestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5DBD6AAC6D335B147766A86 /* IngestView.swift */; };
+		B98F93DC273EB0199A06C09C /* SpaceMono-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2DD528C86DBFFB157C7543A9 /* SpaceMono-Bold.ttf */; };
 		BE5657D29FA5DD12D4E78445 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815671483418FB739BDCB61E /* Config.swift */; };
 		C444E0ECCBC9AB6049A73C60 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5801C3178A834180E3EB7F /* RootView.swift */; };
 		CAC8BD2D66CC1D3577C9CEC8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 833F391FDEF94E41EDF8FA96 /* Assets.xcassets */; };
@@ -73,6 +75,7 @@
 		1B4B8A8E76F37ED81F17099C /* PlatformLogos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformLogos.swift; sourceTree = "<group>"; };
 		1E6BC5AAFBF0D72A45DBA7A8 /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
 		2D0DC1FEB8EE4C83F876BB5E /* DopoKeychain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DopoKeychain.swift; sourceTree = "<group>"; };
+		2DD528C86DBFFB157C7543A9 /* SpaceMono-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SpaceMono-Bold.ttf"; sourceTree = "<group>"; };
 		33FC5A28C529557B687D8842 /* DopoShareExtension.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = DopoShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		4C7ADA2DF91B886B92E9536B /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		56065E6F51E04D7B71EB8CA2 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
@@ -101,6 +104,7 @@
 		D01EABDC4744FE2DB8477659 /* DiscoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverView.swift; sourceTree = "<group>"; };
 		D57C28A6DB8D33093D0FBD73 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		E6429F4CDD17C668D5A32B44 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		F39BC4924061953F5D4D6B9D /* OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = OFL.txt; sourceTree = "<group>"; };
 		FA7E851127497D9154B7FE4C /* DopoApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DopoApp.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -191,6 +195,15 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		77769109ED58610FE6B2F698 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				F39BC4924061953F5D4D6B9D /* OFL.txt */,
+				2DD528C86DBFFB157C7543A9 /* SpaceMono-Bold.ttf */,
+			);
+			path = Fonts;
+			sourceTree = "<group>";
+		};
 		7BDF4A39EFE689F2FFC1AF67 /* Components */ = {
 			isa = PBXGroup;
 			children = (
@@ -254,6 +267,7 @@
 			isa = PBXGroup;
 			children = (
 				61DD0D78D108819A7F4BE334 /* Extensions */,
+				77769109ED58610FE6B2F698 /* Fonts */,
 				EAAE89C54A8E4465E863F291 /* Models */,
 				E1701BB6E4530FADAF4664F0 /* Services */,
 				72E37710BF1AC23E96AA9A8F /* Views */,
@@ -368,6 +382,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				CAC8BD2D66CC1D3577C9CEC8 /* Assets.xcassets in Resources */,
+				9141C6B08EB96720C4F7E397 /* OFL.txt in Resources */,
+				B98F93DC273EB0199A06C09C /* SpaceMono-Bold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

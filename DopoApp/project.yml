@@ -47,6 +47,10 @@ targets:
         CFBundleShortVersionString: "1.0.0"
         CFBundleVersion: "1"
         UILaunchScreen: {}
+        # Brand typeface (Dopo_Brand_Kit.pdf): Space Mono Bold for the wordmark/
+        # display. Theme.swift uses Font.custom("SpaceMono-Bold"); register it here.
+        UIAppFonts:
+          - SpaceMono-Bold.ttf
 
   DopoShareExtension:
     type: app-extension
