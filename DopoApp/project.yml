@@ -51,6 +51,9 @@ targets:
         # display. Theme.swift uses Font.custom("SpaceMono-Bold"); register it here.
         UIAppFonts:
           - SpaceMono-Bold.ttf
+        # Portrait-only iPhone app: declaring full-screen clears Xcode's
+        # "support all orientations unless full screen" warning.
+        UIRequiresFullScreen: true
 
   DopoShareExtension:
     type: app-extension
