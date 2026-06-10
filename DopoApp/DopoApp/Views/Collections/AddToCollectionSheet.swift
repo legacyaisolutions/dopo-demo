@@ -10,10 +10,10 @@ struct AddToCollectionSheet: View {
     @State private var isLoading = true
     @State private var showCreateNew = false
     @State private var newName = ""
-    @State private var newEmoji = "📁"
+    @State private var newEmoji = "✦"
     @State private var isCreating = false
 
-    let emojiOptions = ["📁", "🎬", "🎵", "📚", "💡", "🏋️", "🍳", "🎮", "✈️", "💼", "🎨", "❤️"]
+    let emojiOptions = ["✦", "🎬", "🎵", "📚", "💡", "🏋️", "🍳", "🎮", "✈️", "💼", "🎨", "❤️"]
 
     var editableCollections: [DopoCollection] {
         collections.filter { $0.isEditor }

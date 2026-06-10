@@ -1543,7 +1543,7 @@ function renderCard(save) {
     <div class="card-enrichment ${save.enrichment_status||'pending'}" title="Enrichment: ${save.enrichment_status||'pending'}"></div>
     ${thumbHtml}
     <div class="card-body">
-      <div><span class="card-platform ${p}">${icon} ${label}</span><span class="card-content-type">${save.content_type||""}</span></div>
+      <div><span class="card-platform ${p}">${icon} ${label}</span><span class="card-content-type">${esc(save.content_type||"")}</span></div>
       <div class="card-title">${esc(title.substring(0,200))}</div>
       ${save.creator_name ? `<div class="card-creator">${esc(save.creator_name)}${save.creator_handle ? ` <span class="card-creator-handle">${esc(save.creator_handle)}</span>` : ""}</div>` : ""}
       ${(tagsHtml || categoryHtml) ? `<div class="card-tags">${categoryHtml}${tagsHtml}</div>` : ""}
@@ -1553,7 +1553,7 @@ function renderCard(save) {
           ${activeCollectionRole !== 'viewer' ? `<button class="card-action" onclick="openAddToCollModal('${save.id}')" title="Add to collection">${addToCollIcon}</button>` : ''}
           <button class="card-action ${save.is_favorite?'favorited':''}" onclick="toggleFav('${save.id}',${!save.is_favorite})" title="Favorite">${save.is_favorite?"★":"☆"}</button>
           ${save.user_id === currentUser?.id ? `<button class="card-action delete-btn" onclick="confirmDeleteSave('${save.id}','${esc(title.substring(0,50)).replace(/'/g,"\\'")}')" title="Delete save">🗑</button>` : ''}
-          <a class="card-link" href="${esc(save.canonical_url||save.url)}" target="_blank" rel="noopener">Open ↗</a>
+          <a class="card-link" href="${safeUrl(save.canonical_url||save.url)}" target="_blank" rel="noopener">Open ↗</a>
         </div>
       </div>
     </div>
@@ -1561,6 +1561,8 @@ function renderCard(save) {
 }
 
 function esc(s) { if(!s)return""; return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+// Only allow http/https in rendered links — blocks javascript:/data:/vbscript: XSS via saved URLs.
+function safeUrl(u){ if(!u)return"#"; try{ const p=new URL(u, window.location.href); if(p.protocol!=="http:"&&p.protocol!=="https:")return"#"; return u.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }catch{ return"#"; } }
 
 async function toggleFav(id, newState) {
   try {
@@ -2173,13 +2175,13 @@ function renderSharedCard(save) {
   return `<div class="card">
     ${thumbHtml}
     <div class="card-body">
-      <div><span class="card-platform ${p}">${icon} ${label}</span><span class="card-content-type">${save.content_type||""}</span></div>
+      <div><span class="card-platform ${p}">${icon} ${label}</span><span class="card-content-type">${esc(save.content_type||"")}</span></div>
       <div class="card-title">${esc(title.substring(0,200))}</div>
       ${save.creator_name ? `<div class="card-creator">${esc(save.creator_name)}${save.creator_handle ? ` <span class="card-creator-handle">${esc(save.creator_handle)}</span>` : ""}</div>` : ""}
       ${(tagsHtml || categoryHtml) ? `<div class="card-tags">${categoryHtml}${tagsHtml}</div>` : ""}
       <div class="card-meta">
         <span class="card-date">${dateStr}</span>
-        <a class="card-link" href="${esc(save.canonical_url||save.url)}" target="_blank" rel="noopener">Open ↗</a>
+        <a class="card-link" href="${safeUrl(save.canonical_url||save.url)}" target="_blank" rel="noopener">Open ↗</a>
       </div>
     </div>
   </div>`;
@@ -2308,7 +2310,7 @@ function openDetailModal(saveId) {
         </div>
 
         <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
-          <a class="card-link" href="${esc(save.canonical_url||save.url)}" target="_blank" rel="noopener" style="padding:10px 16px;font-size:13px;">Open Original ↗</a>
+          <a class="card-link" href="${safeUrl(save.canonical_url||save.url)}" target="_blank" rel="noopener" style="padding:10px 16px;font-size:13px;">Open Original ↗</a>
           <button class="detail-save-btn" onclick="saveDetailChanges()">Save Changes</button>
         </div>
         ` : `
@@ -2318,7 +2320,7 @@ function openDetailModal(saveId) {
         </div>
         ${tags.length > 0 ? `<div class="detail-field-group"><div class="detail-field-label">Tags</div><div class="detail-tags-input-wrap">${tags.map(t => `<span class="detail-tag-chip">#${esc(t)}</span>`).join("")}</div></div>` : ''}
         <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
-          <a class="card-link" href="${esc(save.canonical_url||save.url)}" target="_blank" rel="noopener" style="padding:10px 16px;font-size:13px;">Open Original ↗</a>
+          <a class="card-link" href="${safeUrl(save.canonical_url||save.url)}" target="_blank" rel="noopener" style="padding:10px 16px;font-size:13px;">Open Original ↗</a>
         </div>
         `}
       </div>
@@ -2741,7 +2743,12 @@ function showToast(message, type = "success", duration = 3000) {
   const toast = document.createElement("div");
   toast.className = `toast ${type}`;
   const icon = type === "success" ? "✓" : "✕";
-  toast.innerHTML = `<span class="toast-icon">${icon}</span><span>${message}</span>`;
+  const iconEl = document.createElement("span");
+  iconEl.className = "toast-icon";
+  iconEl.textContent = icon;
+  const msgEl = document.createElement("span");
+  msgEl.textContent = message; // textContent, not innerHTML — message may contain user/server data
+  toast.append(iconEl, msgEl);
   container.appendChild(toast);
   setTimeout(() => {
     toast.style.animation = "toastOut 0.3s ease-in forwards";

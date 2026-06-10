@@ -514,7 +514,7 @@ struct BatchCollectionPickerSheet: View {
                             onSelect(collection.id)
                         } label: {
                             HStack {
-                                Text(collection.emoji ?? "📁")
+                                Text(collection.emoji ?? "✦")
                                     .font(.title2)
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(collection.name)

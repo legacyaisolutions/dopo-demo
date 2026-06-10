@@ -577,11 +577,11 @@ struct CreateCollectionView: View {
     @EnvironmentObject var authManager: AuthManager
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
-    @State private var emoji = "📁"
+    @State private var emoji = "✦"
     @State private var isCreating = false
     let onCreated: () -> Void
 
-    let emojiOptions = ["📁", "🎬", "🎵", "📚", "💡", "🏋️", "🍳", "🎮", "✈️", "💼", "🎨", "❤️"]
+    let emojiOptions = ["✦", "🎬", "🎵", "📚", "💡", "🏋️", "🍳", "🎮", "✈️", "💼", "🎨", "❤️"]
 
     var body: some View {
         NavigationStack {

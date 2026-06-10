@@ -248,9 +248,11 @@ User → iOS Share Sheet → Dopo Share Extension
 | GitHub Demo Repo | legacyaisolutions/dopo-demo |
 | GitHub Site Repo | legacyaisolutions/Dopo-site |
 | Vercel Team | nates-projects-1c1ff6ae |
-| Demo Account 1 | nate-demo@dopo.app / dopo-prototype-2026 |
+| Demo Account 1 | nate-demo@dopo.app / _(password removed from repo — store in a password manager)_ |
 | Demo Account 2 | lesaraskog@gmail.com |
-| Demo Account 3 | adaraskog@gmail.com / NateDrew$08 |
+| Demo Account 3 | adaraskog@gmail.com / _(password removed from repo — store in a password manager)_ |
+
+> ⚠️ **Security:** Demo-account passwords were previously committed here in plaintext. They have been redacted from the working copy, **but they remain in git history** — rotate these passwords in Supabase Auth and keep credentials out of the repo going forward.
 
 ## Decision Log
 

@@ -27,7 +27,10 @@ struct DopoCollection: Codable, Identifiable, Hashable {
         case role
     }
 
-    var displayEmoji: String { emoji ?? "📁" }
+    var displayEmoji: String { emoji ?? "✦" }
+
+    /// Whether this collection uses the default emoji (no custom emoji set)
+    var usesDefaultIcon: Bool { emoji == nil }
 
     var isViewOnly: Bool {
         guard let isOwner, !isOwner else { return false }
