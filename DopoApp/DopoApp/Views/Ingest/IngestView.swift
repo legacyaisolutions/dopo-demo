@@ -9,6 +9,11 @@ struct IngestView: View {
     @State private var errorMessage: String?
     @FocusState private var isURLFieldFocused: Bool
 
+    // Collection picker state
+    @State private var collections: [DopoCollection] = []
+    @State private var selectedCollectionId: String?
+    @State private var isLoadingCollections = false
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -23,7 +28,7 @@ struct IngestView: View {
                             Text("Save anything")
                                 .font(.dopoHeading)
                                 .foregroundColor(.dopoText)
-                            Text("Paste a URL from YouTube, TikTok, Instagram, Twitter, or any website.")
+                            Text("Paste a URL from YouTube, TikTok, Instagram, X, Facebook, or any website.")
                                 .font(.dopoBody)
                                 .foregroundColor(.dopoTextMuted)
                                 .multilineTextAlignment(.center)
@@ -68,6 +73,64 @@ struct IngestView: View {
                                 .font(.system(size: 13, weight: .medium))
                                 .foregroundColor(.dopoAccent)
                             }
+
+                            // Add to Collection picker
+                            VStack(spacing: 8) {
+                                HStack(spacing: 8) {
+                                    Image("Icons/collections-icon")
+                                        .renderingMode(.template)
+                                        .resizable()
+                                        .frame(width: 16, height: 16)
+                                        .foregroundColor(.dopoTextDim)
+
+                                    Text("Add to Collection")
+                                        .font(.system(size: 13, weight: .medium))
+                                        .foregroundColor(.dopoTextMuted)
+
+                                    Spacer()
+                                }
+
+                                if isLoadingCollections {
+                                    HStack {
+                                        ProgressView()
+                                            .scaleEffect(0.7)
+                                            .tint(.dopoAccent)
+                                        Spacer()
+                                    }
+                                } else {
+                                    ScrollView(.horizontal, showsIndicators: false) {
+                                        HStack(spacing: 8) {
+                                            // "None" option
+                                            CollectionChip(
+                                                emoji: nil,
+                                                name: "None",
+                                                isSelected: selectedCollectionId == nil
+                                            ) {
+                                                HapticManager.selection()
+                                                selectedCollectionId = nil
+                                            }
+
+                                            ForEach(collections.filter { $0.isEditor }) { coll in
+                                                CollectionChip(
+                                                    emoji: coll.displayEmoji,
+                                                    name: coll.name,
+                                                    isSelected: selectedCollectionId == coll.id
+                                                ) {
+                                                    HapticManager.selection()
+                                                    selectedCollectionId = coll.id
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            .padding(12)
+                            .background(Color.dopoSurface)
+                            .cornerRadius(12)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(selectedCollectionId != nil ? Color.dopoAccent.opacity(0.4) : Color.dopoBorder, lineWidth: 1)
+                            )
 
                             // Save button
                             Button(action: { Task { await ingestURL() } }) {
@@ -126,10 +189,23 @@ struct IngestView: View {
                                         .cornerRadius(6)
                                 }
 
+                                if let collName = result.collectionName {
+                                    HStack(spacing: 4) {
+                                        Image("Icons/collections-icon")
+                                            .renderingMode(.template)
+                                            .resizable()
+                                            .frame(width: 12, height: 12)
+                                        Text("Added to \(collName)")
+                                            .font(.system(size: 11, weight: .medium))
+                                    }
+                                    .foregroundColor(.dopoAccent)
+                                }
+
                                 Button("Save Another") {
                                     withAnimation {
                                         self.result = nil
                                         urlText = ""
+                                        selectedCollectionId = nil
                                     }
                                 }
                                 .font(.system(size: 14, weight: .medium))
@@ -171,11 +247,13 @@ struct IngestView: View {
                                 .foregroundColor(.dopoTextDim)
                                 .tracking(1)
 
-                            HStack(spacing: 20) {
-                                PlatformBadge(name: "YouTube", icon: "play.rectangle.fill", color: Color(red: 1.0, green: 0.0, blue: 0.2))
-                                PlatformBadge(name: "TikTok", icon: "music.note", color: Color(red: 0.0, green: 0.95, blue: 0.92))
-                                PlatformBadge(name: "Instagram", icon: "camera.fill", color: Color(red: 0.88, green: 0.19, blue: 0.42))
-                                PlatformBadge(name: "Twitter", icon: "bubble.left.fill", color: Color(red: 0.11, green: 0.61, blue: 0.94))
+                            HStack(spacing: 16) {
+                                PlatformBrandBadge(platform: .youtube)
+                                PlatformBrandBadge(platform: .tiktok)
+                                PlatformBrandBadge(platform: .instagram)
+                                PlatformBrandBadge(platform: .twitter)
+                                PlatformBrandBadge(platform: .facebook)
+                                PlatformBrandBadge(platform: .web)
                             }
                         }
                         .padding(.top, 12)
@@ -186,6 +264,7 @@ struct IngestView: View {
             }
             .navigationTitle("Save")
             .navigationBarTitleDisplayMode(.inline)
+            .task { await loadCollections() }
         }
     }
 
@@ -194,6 +273,18 @@ struct IngestView: View {
         if let clipboardString = UIPasteboard.general.string {
             urlText = clipboardString
         }
+    }
+
+    private func loadCollections() async {
+        guard let token = authManager.accessToken else { return }
+        isLoadingCollections = true
+        do {
+            let response = try await APIClient.shared.fetchCollections(token: token)
+            collections = response.collections
+        } catch {
+            // Silently fail — collections are optional
+        }
+        isLoadingCollections = false
     }
 
     private func ingestURL() async {
@@ -208,10 +299,23 @@ struct IngestView: View {
         do {
             let response = try await APIClient.shared.ingestURL(token: token, urlString: trimmed)
             HapticManager.notification(.success)
+
+            // If a collection was selected, add the save to it
+            var collectionName: String?
+            if let collId = selectedCollectionId, let saveId = response.save?.id {
+                do {
+                    try await APIClient.shared.addSaveToCollection(token: token, collectionId: collId, saveId: saveId)
+                    collectionName = collections.first(where: { $0.id == collId })?.name
+                } catch {
+                    // Save succeeded but collection add failed — still show success
+                }
+            }
+
             withAnimation {
                 result = IngestResult(
                     title: response.save?.displayTitle,
-                    platform: response.save?.platform
+                    platform: response.save?.platform,
+                    collectionName: collectionName
                 )
                 isIngesting = false
             }
@@ -228,19 +332,51 @@ struct IngestView: View {
 struct IngestResult {
     let title: String?
     let platform: String?
+    let collectionName: String?
 }
 
-struct PlatformBadge: View {
+// MARK: - Collection Chip (for inline picker)
+
+struct CollectionChip: View {
+    let emoji: String?
     let name: String
-    let icon: String
-    let color: Color
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 4) {
+                if let emoji {
+                    Text(emoji)
+                        .font(.system(size: 14))
+                }
+                Text(name)
+                    .font(.system(size: 12, weight: .medium))
+                    .lineLimit(1)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(isSelected ? Color.dopoAccentGlow : Color.dopoSurfaceHover)
+            .foregroundColor(isSelected ? .dopoAccent : .dopoTextMuted)
+            .cornerRadius(16)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(isSelected ? Color.dopoAccent : Color.dopoBorder, lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Platform Brand Badge (uses asset catalog logos)
+
+struct PlatformBrandBadge: View {
+    let platform: PlatformTheme
 
     var body: some View {
         VStack(spacing: 6) {
-            Image(systemName: icon)
-                .font(.system(size: 20))
-                .foregroundColor(color)
-            Text(name)
+            PlatformLogo(platform, size: 22)
+            Text(platform.label)
                 .font(.system(size: 9, weight: .medium))
                 .foregroundColor(.dopoTextDim)
         }

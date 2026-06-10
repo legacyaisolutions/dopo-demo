@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30" width="30" height="30">
+  <!-- Back card (outline) -->
+  <rect x="1" y="1" width="17" height="17" rx="3.5" ry="3.5" fill="none" stroke="#000000" stroke-width="2"/>
+  <!-- Front card (filled) -->
+  <rect x="12" y="12" width="17" height="17" rx="3.5" ry="3.5" fill="#000000"/>
+  <!-- Plus sign (white cut-out) -->
+  <rect x="19.5" y="15.5" width="2" height="10" rx="1" fill="#FFFFFF"/>
+  <rect x="15.5" y="19.5" width="10" height="2" rx="1" fill="#FFFFFF"/>
+</svg>

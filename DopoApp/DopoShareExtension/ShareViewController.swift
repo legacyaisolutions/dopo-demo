@@ -1,5 +1,6 @@
 import UIKit
 import UniformTypeIdentifiers
+import Security
 
 /// Dopo Share Extension — allows saving URLs from any app's share sheet.
 /// Receives a shared URL, sends it to the ingest edge function, and displays
@@ -155,7 +156,7 @@ class ShareViewController: UIViewController {
 
     private func ingestURL(_ urlString: String) {
         // Get auth token from shared Keychain
-        guard let token = SharedKeychainManager.retrieve(key: "dopo_access_token") else {
+        guard let token = SharedKeychainManager.retrieve(key: DopoKeychain.accessTokenKey) else {
             showError("Not signed in — open dopo first")
             return
         }
@@ -264,19 +265,17 @@ class ShareViewController: UIViewController {
 /// Reads tokens from the shared Keychain access group so the share extension
 /// can authenticate with the same user session as the main app.
 ///
-/// IMPORTANT: The main app's KeychainManager must be updated to write tokens
-/// using the same kSecAttrAccessGroup. See SHARE_EXTENSION_SETUP.md.
+/// The service + access group come from `DopoKeychain` (Shared/DopoKeychain.swift,
+/// compiled into both targets), so they are guaranteed to match the values the
+/// main app's KeychainManager writes with. See SHARE_EXTENSION_SETUP.md.
 enum SharedKeychainManager {
-
-    private static let accessGroup = "group.app.dopo.shared"
-    private static let service = "app.dopo.DopoApp"
 
     static func retrieve(key: String) -> String? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: key,
-            kSecAttrService as String: service,
-            kSecAttrAccessGroup as String: accessGroup,
+            kSecAttrService as String: DopoKeychain.service,
+            kSecAttrAccessGroup as String: DopoKeychain.accessGroup,
             kSecReturnData as String: true,
             kSecMatchLimit as String: kSecMatchLimitOne,
         ]

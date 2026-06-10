@@ -9,8 +9,8 @@ class AuthManager: ObservableObject {
     @Published var error: String?
     @Published var sessionExpired = false
 
-    private let tokenKey = "dopo_access_token"
-    private let refreshTokenKey = "dopo_refresh_token"
+    private let tokenKey = DopoKeychain.accessTokenKey
+    private let refreshTokenKey = DopoKeychain.refreshTokenKey
 
     struct AuthUser: Codable {
         let id: String
@@ -44,6 +44,10 @@ class AuthManager: ObservableObject {
     init() {
         // One-time migration from UserDefaults to Keychain (existing users)
         KeychainManager.migrateFromUserDefaults(tokenKey: tokenKey, refreshTokenKey: refreshTokenKey)
+
+        // Move tokens saved by older builds (no kSecAttrAccessGroup) into the
+        // shared access group so the Share Extension can read the session.
+        KeychainManager.migrateToSharedAccessGroup(keys: [tokenKey, refreshTokenKey])
 
         // Wire up 401 handler so expired tokens auto-logout
         APIClient.shared.onUnauthorized = { [weak self] in

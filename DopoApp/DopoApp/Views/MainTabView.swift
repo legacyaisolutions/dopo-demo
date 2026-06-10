@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct MainTabView: View {
     @EnvironmentObject var authManager: AuthManager
@@ -15,24 +16,35 @@ struct MainTabView: View {
 
             CollectionsView()
                 .tabItem {
-                    Image(systemName: "folder.fill")
+                    if let uiImage = UIImage(named: "Icons/collections-icon")?.withRenderingMode(.alwaysTemplate) {
+                        Image(uiImage: uiImage)
+                    } else {
+                        Image(systemName: "square.on.square.fill")
+                    }
                     Text("Collections")
                 }
                 .tag(1)
+
+            DiscoverView()
+                .tabItem {
+                    Image(systemName: "sparkle.magnifyingglass")
+                    Text("Discover")
+                }
+                .tag(2)
 
             IngestView()
                 .tabItem {
                     Image(systemName: "plus.circle.fill")
                     Text("Save")
                 }
-                .tag(2)
+                .tag(3)
 
             ProfileView()
                 .tabItem {
                     Image(systemName: "person.fill")
                     Text("Profile")
                 }
-                .tag(3)
+                .tag(4)
         }
         .tint(.dopoAccent)
     }

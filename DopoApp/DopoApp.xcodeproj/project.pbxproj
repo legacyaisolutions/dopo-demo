@@ -3,35 +3,69 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 63;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		01A5AAE2A394F220B7639C7A /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F27C454EE7F96938AA97ECA /* Theme.swift */; };
 		02B90F13B6887E186A182EE3 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78B60AF7CF97AC9EE6E084A4 /* LibraryView.swift */; };
-		227DAB4C2F4CE55800274ABC /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 227DAB4B2F4CE55800274ABC /* NotificationManager.swift */; };
-		227DAB4E2F4CE5FB00274ABC /* Notification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 227DAB4D2F4CE5FB00274ABC /* Notification.swift */; };
 		26B38EA8410564BB7B3F44F3 /* SaveCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7858737F935DDDC107479F94 /* SaveCard.swift */; };
+		2FC7FD029593E56CD6C7BA1E /* NotificationListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 564281BF35C255B231821AF1 /* NotificationListView.swift */; };
+		3DA9F9D112940D4135419390 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C7ADA2DF91B886B92E9536B /* ShareViewController.swift */; };
 		3DB24D3CEA4D2F80F17B2692 /* CollectionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9246DB287536D3AC70712739 /* CollectionsView.swift */; };
 		4BAB1801AE91FF07FC13AB07 /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E6BC5AAFBF0D72A45DBA7A8 /* KeychainManager.swift */; };
 		4F58A5ED2BA39E5F0865A08D /* SaveDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA97C08CAA78F1C34AA4263 /* SaveDetailView.swift */; };
 		5E944DD66E011AD2FBF4FE1D /* Save.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01D8C0B72FAE2AFCBB16844 /* Save.swift */; };
 		635FB2BB15A43C189EFD03F3 /* ConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F701576ECCF3B2EC6440659 /* ConfigManager.swift */; };
+		6AE892958BF491F74660F785 /* AddToCollectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 897ECD9AC5789684CD599E9A /* AddToCollectionSheet.swift */; };
+		6BDC0F54822DE7C39F6C4912 /* NotificationBellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88F511CFB4FEACE43AC94BB9 /* NotificationBellView.swift */; };
 		799FD6E8F2B53E4EB41941B5 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D57C28A6DB8D33093D0FBD73 /* MainTabView.swift */; };
 		7DC5171B6476FB1374711137 /* ErrorBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06425C26B9D8B62C86B830AF /* ErrorBanner.swift */; };
+		8013CA6E5A475746166CE6BD /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56065E6F51E04D7B71EB8CA2 /* NotificationManager.swift */; };
 		813C2C6280D38C2D3F71A064 /* DopoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2F24B1162358164D965718B /* DopoApp.swift */; };
 		8EC256FBE12E4179E26E6E6D /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6429F4CDD17C668D5A32B44 /* APIClient.swift */; };
+		9141C6B08EB96720C4F7E397 /* OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = F39BC4924061953F5D4D6B9D /* OFL.txt */; };
 		9BBE1ECE11758B5D437156AA /* IngestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5DBD6AAC6D335B147766A86 /* IngestView.swift */; };
+		B98F93DC273EB0199A06C09C /* SpaceMono-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 2DD528C86DBFFB157C7543A9 /* SpaceMono-Bold.ttf */; };
 		BE5657D29FA5DD12D4E78445 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815671483418FB739BDCB61E /* Config.swift */; };
 		C444E0ECCBC9AB6049A73C60 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C5801C3178A834180E3EB7F /* RootView.swift */; };
 		CAC8BD2D66CC1D3577C9CEC8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 833F391FDEF94E41EDF8FA96 /* Assets.xcassets */; };
+		CBCD7E5B030551310DFB7C48 /* DiscoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D01EABDC4744FE2DB8477659 /* DiscoverView.swift */; };
+		D426E525EF12C99C451266F5 /* Notification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B097236AF315D5E85092CE6 /* Notification.swift */; };
+		D65E2915591CD7BD31DB7C2D /* DopoKeychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D0DC1FEB8EE4C83F876BB5E /* DopoKeychain.swift */; };
 		D7D849B4B15B4C198EDFC9AB /* AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AF9C40AC6BCAB58E24409D2 /* AuthView.swift */; };
+		DFD1220D583EFE7D1AFCBC9D /* DopoKeychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D0DC1FEB8EE4C83F876BB5E /* DopoKeychain.swift */; };
 		E16C93B693FB97CA1E24AC9C /* PlatformLogos.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B4B8A8E76F37ED81F17099C /* PlatformLogos.swift */; };
+		E40FBDEF45ADE22860A137A3 /* DopoShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 33FC5A28C529557B687D8842 /* DopoShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		EF6BC029B098E06EE0D727D5 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01B6BE392A8E42D99EA6F3E0 /* AuthManager.swift */; };
 		F0F018E97069FDC6762618F2 /* Collection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9543A4ECBC8CEF4F5CB9E094 /* Collection.swift */; };
 		F58C1F6E095A0992D70662F1 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05098F6011779F66DF1D4A88 /* ProfileView.swift */; };
 		FD79EF1486E275B6AB03434F /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97C3A49959B9D16CD27E48DE /* HapticManager.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		E297E28636B11820681352FB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 099AA66460C83A7F437C88E7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4090CC7B03106EE26C2BFFB6;
+			remoteInfo = DopoShareExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		D83758B317449590667104DF /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				E40FBDEF45ADE22860A137A3 /* DopoShareExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		01B6BE392A8E42D99EA6F3E0 /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
@@ -40,15 +74,23 @@
 		1AF9C40AC6BCAB58E24409D2 /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
 		1B4B8A8E76F37ED81F17099C /* PlatformLogos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformLogos.swift; sourceTree = "<group>"; };
 		1E6BC5AAFBF0D72A45DBA7A8 /* KeychainManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainManager.swift; sourceTree = "<group>"; };
-		227DAB4B2F4CE55800274ABC /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
-		227DAB4D2F4CE5FB00274ABC /* Notification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notification.swift; sourceTree = "<group>"; };
+		2D0DC1FEB8EE4C83F876BB5E /* DopoKeychain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DopoKeychain.swift; sourceTree = "<group>"; };
+		2DD528C86DBFFB157C7543A9 /* SpaceMono-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SpaceMono-Bold.ttf"; sourceTree = "<group>"; };
+		33FC5A28C529557B687D8842 /* DopoShareExtension.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = DopoShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		4C7ADA2DF91B886B92E9536B /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
+		56065E6F51E04D7B71EB8CA2 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		564281BF35C255B231821AF1 /* NotificationListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationListView.swift; sourceTree = "<group>"; };
+		57317DA127D6462E59E47900 /* DopoShareExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DopoShareExtension.entitlements; sourceTree = "<group>"; };
+		5B097236AF315D5E85092CE6 /* Notification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notification.swift; sourceTree = "<group>"; };
 		6C5801C3178A834180E3EB7F /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
-		7267BDFDABE8D2841B0CCD47 /* DopoApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DopoApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7267BDFDABE8D2841B0CCD47 /* DopoApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DopoApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7858737F935DDDC107479F94 /* SaveCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveCard.swift; sourceTree = "<group>"; };
 		78B60AF7CF97AC9EE6E084A4 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		7AF2EA9CEBA3C1514B25887F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		815671483418FB739BDCB61E /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		833F391FDEF94E41EDF8FA96 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		88F511CFB4FEACE43AC94BB9 /* NotificationBellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationBellView.swift; sourceTree = "<group>"; };
+		897ECD9AC5789684CD599E9A /* AddToCollectionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddToCollectionSheet.swift; sourceTree = "<group>"; };
 		8F701576ECCF3B2EC6440659 /* ConfigManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigManager.swift; sourceTree = "<group>"; };
 		9246DB287536D3AC70712739 /* CollectionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionsView.swift; sourceTree = "<group>"; };
 		9543A4ECBC8CEF4F5CB9E094 /* Collection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Collection.swift; sourceTree = "<group>"; };
@@ -56,13 +98,26 @@
 		9F27C454EE7F96938AA97ECA /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		A2F24B1162358164D965718B /* DopoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DopoApp.swift; sourceTree = "<group>"; };
 		B5DBD6AAC6D335B147766A86 /* IngestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IngestView.swift; sourceTree = "<group>"; };
+		BDA8A00EC9B5D6D90F4F38B3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		C01D8C0B72FAE2AFCBB16844 /* Save.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Save.swift; sourceTree = "<group>"; };
 		CEA97C08CAA78F1C34AA4263 /* SaveDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveDetailView.swift; sourceTree = "<group>"; };
+		D01EABDC4744FE2DB8477659 /* DiscoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverView.swift; sourceTree = "<group>"; };
 		D57C28A6DB8D33093D0FBD73 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		E6429F4CDD17C668D5A32B44 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		F39BC4924061953F5D4D6B9D /* OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = OFL.txt; sourceTree = "<group>"; };
+		FA7E851127497D9154B7FE4C /* DopoApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DopoApp.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		122E1F300F6768F69598DDBE /* Notifications */ = {
+			isa = PBXGroup;
+			children = (
+				88F511CFB4FEACE43AC94BB9 /* NotificationBellView.swift */,
+				564281BF35C255B231821AF1 /* NotificationListView.swift */,
+			);
+			path = Notifications;
+			sourceTree = "<group>";
+		};
 		27208958378BFBE85B8D8F87 /* Library */ = {
 			isa = PBXGroup;
 			children = (
@@ -79,6 +134,14 @@
 			path = Ingest;
 			sourceTree = "<group>";
 		};
+		46F8809BE73742EAF6624A49 /* Discover */ = {
+			isa = PBXGroup;
+			children = (
+				D01EABDC4744FE2DB8477659 /* DiscoverView.swift */,
+			);
+			path = Discover;
+			sourceTree = "<group>";
+		};
 		5F871056050C64AF86FC88B2 /* Auth */ = {
 			isa = PBXGroup;
 			children = (
@@ -90,6 +153,7 @@
 		615B3DC4D9C239D0862FB7D6 /* Collections */ = {
 			isa = PBXGroup;
 			children = (
+				897ECD9AC5789684CD599E9A /* AddToCollectionSheet.swift */,
 				9246DB287536D3AC70712739 /* CollectionsView.swift */,
 			);
 			path = Collections;
@@ -103,20 +167,41 @@
 			path = Extensions;
 			sourceTree = "<group>";
 		};
+		625B7B6F6D56109CD8C958AE /* DopoShareExtension */ = {
+			isa = PBXGroup;
+			children = (
+				57317DA127D6462E59E47900 /* DopoShareExtension.entitlements */,
+				BDA8A00EC9B5D6D90F4F38B3 /* Info.plist */,
+				4C7ADA2DF91B886B92E9536B /* ShareViewController.swift */,
+			);
+			path = DopoShareExtension;
+			sourceTree = "<group>";
+		};
 		72E37710BF1AC23E96AA9A8F /* Views */ = {
 			isa = PBXGroup;
 			children = (
 				5F871056050C64AF86FC88B2 /* Auth */,
 				615B3DC4D9C239D0862FB7D6 /* Collections */,
 				7BDF4A39EFE689F2FFC1AF67 /* Components */,
+				46F8809BE73742EAF6624A49 /* Discover */,
 				3651A22462AFC9C73F8B5228 /* Ingest */,
 				27208958378BFBE85B8D8F87 /* Library */,
+				122E1F300F6768F69598DDBE /* Notifications */,
 				EDAD36EDAC9364E914504304 /* Player */,
 				A12B648B6CF276A81CC194F4 /* Profile */,
 				D57C28A6DB8D33093D0FBD73 /* MainTabView.swift */,
 				6C5801C3178A834180E3EB7F /* RootView.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		77769109ED58610FE6B2F698 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				F39BC4924061953F5D4D6B9D /* OFL.txt */,
+				2DD528C86DBFFB157C7543A9 /* SpaceMono-Bold.ttf */,
+			);
+			path = Fonts;
 			sourceTree = "<group>";
 		};
 		7BDF4A39EFE689F2FFC1AF67 /* Components */ = {
@@ -141,14 +226,25 @@
 			isa = PBXGroup;
 			children = (
 				7267BDFDABE8D2841B0CCD47 /* DopoApp.app */,
+				33FC5A28C529557B687D8842 /* DopoShareExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		A5F8E155C763D86BB43A0702 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				2D0DC1FEB8EE4C83F876BB5E /* DopoKeychain.swift */,
+			);
+			path = Shared;
 			sourceTree = "<group>";
 		};
 		CC5F1B1758975983D9A1D790 = {
 			isa = PBXGroup;
 			children = (
 				E73B9ACE0378E9E7B72E7FAC /* DopoApp */,
+				625B7B6F6D56109CD8C958AE /* DopoShareExtension */,
+				A5F8E155C763D86BB43A0702 /* Shared */,
 				A19B23DE90951CE9856938A4 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -162,7 +258,7 @@
 				8F701576ECCF3B2EC6440659 /* ConfigManager.swift */,
 				97C3A49959B9D16CD27E48DE /* HapticManager.swift */,
 				1E6BC5AAFBF0D72A45DBA7A8 /* KeychainManager.swift */,
-				227DAB4D2F4CE5FB00274ABC /* Notification.swift */,
+				56065E6F51E04D7B71EB8CA2 /* NotificationManager.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -171,13 +267,14 @@
 			isa = PBXGroup;
 			children = (
 				61DD0D78D108819A7F4BE334 /* Extensions */,
+				77769109ED58610FE6B2F698 /* Fonts */,
 				EAAE89C54A8E4465E863F291 /* Models */,
 				E1701BB6E4530FADAF4664F0 /* Services */,
 				72E37710BF1AC23E96AA9A8F /* Views */,
 				833F391FDEF94E41EDF8FA96 /* Assets.xcassets */,
+				FA7E851127497D9154B7FE4C /* DopoApp.entitlements */,
 				A2F24B1162358164D965718B /* DopoApp.swift */,
 				7AF2EA9CEBA3C1514B25887F /* Info.plist */,
-				227DAB4B2F4CE55800274ABC /* NotificationManager.swift */,
 			);
 			path = DopoApp;
 			sourceTree = "<group>";
@@ -186,6 +283,7 @@
 			isa = PBXGroup;
 			children = (
 				9543A4ECBC8CEF4F5CB9E094 /* Collection.swift */,
+				5B097236AF315D5E85092CE6 /* Notification.swift */,
 				C01D8C0B72FAE2AFCBB16844 /* Save.swift */,
 			);
 			path = Models;
@@ -208,10 +306,12 @@
 			buildPhases = (
 				04E24034542FEB6619FA3F69 /* Sources */,
 				79BACC008E2CFEDE480F9493 /* Resources */,
+				D83758B317449590667104DF /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				497F79CB09EF28EB11A87DEB /* PBXTargetDependency */,
 			);
 			name = DopoApp;
 			packageProductDependencies = (
@@ -219,6 +319,23 @@
 			productName = DopoApp;
 			productReference = 7267BDFDABE8D2841B0CCD47 /* DopoApp.app */;
 			productType = "com.apple.product-type.application";
+		};
+		4090CC7B03106EE26C2BFFB6 /* DopoShareExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7E38020F1237037A79A8E3C3 /* Build configuration list for PBXNativeTarget "DopoShareExtension" */;
+			buildPhases = (
+				E031B93138C212154E5C0281 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DopoShareExtension;
+			packageProductDependencies = (
+			);
+			productName = DopoShareExtension;
+			productReference = 33FC5A28C529557B687D8842 /* DopoShareExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -228,6 +345,16 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					2FBAB10238E9B8766340D5DD = {
+						DevelopmentTeam = HV398LUQ3Z;
+						ProvisioningStyle = Automatic;
+					};
+					4090CC7B03106EE26C2BFFB6 = {
+						DevelopmentTeam = HV398LUQ3Z;
+						ProvisioningStyle = Automatic;
+					};
+				};
 			};
 			buildConfigurationList = 6BA31344C00CA899EDF53FF8 /* Build configuration list for PBXProject "DopoApp" */;
 			compatibilityVersion = "Xcode 14.0";
@@ -239,10 +366,12 @@
 			);
 			mainGroup = CC5F1B1758975983D9A1D790;
 			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				2FBAB10238E9B8766340D5DD /* DopoApp */,
+				4090CC7B03106EE26C2BFFB6 /* DopoShareExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -253,6 +382,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				CAC8BD2D66CC1D3577C9CEC8 /* Assets.xcassets in Resources */,
+				9141C6B08EB96720C4F7E397 /* OFL.txt in Resources */,
+				B98F93DC273EB0199A06C09C /* SpaceMono-Bold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -264,21 +395,26 @@
 			buildActionMask = 2147483647;
 			files = (
 				8EC256FBE12E4179E26E6E6D /* APIClient.swift in Sources */,
+				6AE892958BF491F74660F785 /* AddToCollectionSheet.swift in Sources */,
 				EF6BC029B098E06EE0D727D5 /* AuthManager.swift in Sources */,
 				D7D849B4B15B4C198EDFC9AB /* AuthView.swift in Sources */,
-				227DAB4E2F4CE5FB00274ABC /* Notification.swift in Sources */,
 				F0F018E97069FDC6762618F2 /* Collection.swift in Sources */,
-				227DAB4C2F4CE55800274ABC /* NotificationManager.swift in Sources */,
 				3DB24D3CEA4D2F80F17B2692 /* CollectionsView.swift in Sources */,
 				BE5657D29FA5DD12D4E78445 /* Config.swift in Sources */,
 				635FB2BB15A43C189EFD03F3 /* ConfigManager.swift in Sources */,
+				CBCD7E5B030551310DFB7C48 /* DiscoverView.swift in Sources */,
 				813C2C6280D38C2D3F71A064 /* DopoApp.swift in Sources */,
+				DFD1220D583EFE7D1AFCBC9D /* DopoKeychain.swift in Sources */,
 				7DC5171B6476FB1374711137 /* ErrorBanner.swift in Sources */,
 				FD79EF1486E275B6AB03434F /* HapticManager.swift in Sources */,
 				9BBE1ECE11758B5D437156AA /* IngestView.swift in Sources */,
 				4BAB1801AE91FF07FC13AB07 /* KeychainManager.swift in Sources */,
 				02B90F13B6887E186A182EE3 /* LibraryView.swift in Sources */,
 				799FD6E8F2B53E4EB41941B5 /* MainTabView.swift in Sources */,
+				D426E525EF12C99C451266F5 /* Notification.swift in Sources */,
+				6BDC0F54822DE7C39F6C4912 /* NotificationBellView.swift in Sources */,
+				2FC7FD029593E56CD6C7BA1E /* NotificationListView.swift in Sources */,
+				8013CA6E5A475746166CE6BD /* NotificationManager.swift in Sources */,
 				E16C93B693FB97CA1E24AC9C /* PlatformLogos.swift in Sources */,
 				F58C1F6E095A0992D70662F1 /* ProfileView.swift in Sources */,
 				C444E0ECCBC9AB6049A73C60 /* RootView.swift in Sources */,
@@ -289,25 +425,57 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E031B93138C212154E5C0281 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D65E2915591CD7BD31DB7C2D /* DopoKeychain.swift in Sources */,
+				3DA9F9D112940D4135419390 /* ShareViewController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		497F79CB09EF28EB11A87DEB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4090CC7B03106EE26C2BFFB6 /* DopoShareExtension */;
+			targetProxy = E297E28636B11820681352FB /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		19E6EA7DB9643711D1525803 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = DopoShareExtension/DopoShareExtension.entitlements;
+				INFOPLIST_FILE = DopoShareExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = dopo;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.dopo.DopoApp.ShareExtension;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		21FEC940D50EF8764CAC6122 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = HV398LUQ3Z;
+				CODE_SIGN_ENTITLEMENTS = DopoApp/DopoApp.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = DopoApp/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = io.dopo.app;
-				PROVISIONING_PROFILE_SPECIFIER = "";
+				PRODUCT_BUNDLE_IDENTIFIER = app.dopo.DopoApp;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -346,9 +514,11 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = HV398LUQ3Z;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -387,21 +557,36 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = HV398LUQ3Z;
+				CODE_SIGN_ENTITLEMENTS = DopoApp/DopoApp.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = DopoApp/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = io.dopo.app;
-				PROVISIONING_PROFILE_SPECIFIER = "";
+				PRODUCT_BUNDLE_IDENTIFIER = app.dopo.DopoApp;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
+		};
+		BD2CCF26EF55ABE4AB220AC0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = DopoShareExtension/DopoShareExtension.entitlements;
+				INFOPLIST_FILE = DopoShareExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = dopo;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.dopo.DopoApp.ShareExtension;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
 		};
 		DDE8ABFBC1D3B205BF78E700 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -436,9 +621,11 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = HV398LUQ3Z;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -473,6 +660,15 @@
 			buildConfigurations = (
 				427AC6D83557CE79CD67721B /* Debug */,
 				DDE8ABFBC1D3B205BF78E700 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		7E38020F1237037A79A8E3C3 /* Build configuration list for PBXNativeTarget "DopoShareExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BD2CCF26EF55ABE4AB220AC0 /* Debug */,
+				19E6EA7DB9643711D1525803 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

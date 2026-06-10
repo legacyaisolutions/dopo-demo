@@ -577,11 +577,11 @@ struct CreateCollectionView: View {
     @EnvironmentObject var authManager: AuthManager
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
-    @State private var emoji = "📁"
+    @State private var emoji = "✦"
     @State private var isCreating = false
     let onCreated: () -> Void
 
-    let emojiOptions = ["📁", "🎬", "🎵", "📚", "💡", "🏋️", "🍳", "🎮", "✈️", "💼", "🎨", "❤️"]
+    let emojiOptions = ["✦", "🎬", "🎵", "📚", "💡", "🏋️", "🍳", "🎮", "✈️", "💼", "🎨", "❤️"]
 
     var body: some View {
         NavigationStack {
@@ -992,12 +992,18 @@ struct ShareCollectionView: View {
 
                                 Spacer()
 
-                                Toggle("", isOn: $isPublic)
-                                    .labelsHidden()
-                                    .tint(.dopoAccent)
-                                    .onChange(of: isPublic) { _ in
+                                Toggle("", isOn: Binding(
+                                    get: { isPublic },
+                                    set: { newValue in
+                                        // User-driven only: programmatic isPublic writes in
+                                        // toggleShare() (server sync / failure revert) don't call
+                                        // this setter, so the share API can't re-fire re-entrantly.
+                                        isPublic = newValue
                                         Task { await toggleShare() }
                                     }
+                                ))
+                                    .labelsHidden()
+                                    .tint(.dopoAccent)
                             }
                             .padding(14)
                             .background(Color.dopoSurface)
