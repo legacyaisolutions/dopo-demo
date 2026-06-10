@@ -376,15 +376,22 @@ class ShareViewController: UIViewController {
     }
 
     private func makeChip(index: Int, name: String, emoji: String) -> UIButton {
-        let button = UIButton(type: .system)
-        button.setTitle("\(emoji) \(name)", for: .normal)
-        button.setTitleColor(text, for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 13, weight: .medium)
-        button.backgroundColor = surfaceHover
-        button.layer.cornerRadius = 16
-        button.layer.borderWidth = 1
-        button.layer.borderColor = border.cgColor
-        button.contentEdgeInsets = UIEdgeInsets(top: 8, left: 14, bottom: 8, right: 14)
+        var cfg = UIButton.Configuration.plain()
+        cfg.title = "\(emoji) \(name)"
+        cfg.baseForegroundColor = text
+        cfg.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 14, bottom: 8, trailing: 14)
+        var bg = UIBackgroundConfiguration.clear()
+        bg.backgroundColor = surfaceHover
+        bg.cornerRadius = 16
+        bg.strokeColor = border
+        bg.strokeWidth = 1
+        cfg.background = bg
+        cfg.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
+            var outgoing = incoming
+            outgoing.font = UIFont.systemFont(ofSize: 13, weight: .medium)
+            return outgoing
+        }
+        let button = UIButton(configuration: cfg)
         button.tag = index
         button.addTarget(self, action: #selector(chipTapped(_:)), for: .touchUpInside)
         return button
@@ -395,25 +402,35 @@ class ShareViewController: UIViewController {
         guard idx >= 0, idx < collections.count,
               let saveId = savedId, let token = authToken else { return }
         let coll = collections[idx]
-        sender.isEnabled = false
+        sender.isUserInteractionEnabled = false
 
         addSaveToCollection(collectionId: coll.id, saveId: saveId, token: token) { [weak self] ok in
             guard let self = self else { return }
             if ok {
                 self.markChipAdded(sender, name: coll.name)
             } else {
-                sender.isEnabled = true
+                sender.isUserInteractionEnabled = true
             }
         }
     }
 
     private func markChipAdded(_ button: UIButton, name: String) {
-        button.setTitle("\u{2713} \(name)", for: .normal) // ✓
-        button.setTitleColor(.white, for: .normal)
-        button.setTitleColor(.white, for: .disabled)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 13, weight: .semibold)
-        button.backgroundColor = accent
-        button.isEnabled = false
+        var cfg = button.configuration ?? UIButton.Configuration.plain()
+        cfg.title = "\u{2713} \(name)" // ✓
+        cfg.baseForegroundColor = .white
+        var bg = cfg.background
+        bg.backgroundColor = accent
+        bg.cornerRadius = 16
+        bg.strokeColor = accent
+        bg.strokeWidth = 1
+        cfg.background = bg
+        cfg.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { incoming in
+            var outgoing = incoming
+            outgoing.font = UIFont.systemFont(ofSize: 13, weight: .semibold)
+            return outgoing
+        }
+        button.configuration = cfg
+        button.isUserInteractionEnabled = false
     }
 
     private func addSaveToCollection(collectionId: String, saveId: String, token: String, completion: @escaping (Bool) -> Void) {
