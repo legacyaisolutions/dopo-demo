@@ -69,12 +69,14 @@ class AuthManager: ObservableObject {
             request.setValue(DopoConfig.supabaseAnonKey, forHTTPHeaderField: "apikey")
             let (data, response) = try await URLSession.shared.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse else {
-                logout()
+                // Non-HTTP response (shouldn't happen) — keep existing session alive
+                isAuthenticated = true
+                isLoading = false
                 return
             }
 
             if httpResponse.statusCode == 401 {
-                // Try refreshing the token before giving up
+                // Token expired — try to refresh before giving up
                 let refreshed = await attemptTokenRefresh()
                 if !refreshed {
                     logout()
@@ -84,7 +86,11 @@ class AuthManager: ObservableObject {
             }
 
             guard httpResponse.statusCode == 200 else {
-                logout()
+                // Server error (5xx, 429, etc.) — don't destroy the session;
+                // the token may still be valid and the next real request will
+                // surface a 401 if it isn't.
+                isAuthenticated = true
+                isLoading = false
                 return
             }
 
@@ -92,7 +98,11 @@ class AuthManager: ObservableObject {
             currentUser = user
             isAuthenticated = true
         } catch {
-            logout()
+            // Network error (no connectivity, timeout, etc.) — keep the stored
+            // token alive so the user isn't signed out just because of a bad
+            // connection at launch. A real 401 from the next API call will
+            // trigger handleUnauthorized() if the token truly expired.
+            isAuthenticated = true
         }
         isLoading = false
     }
