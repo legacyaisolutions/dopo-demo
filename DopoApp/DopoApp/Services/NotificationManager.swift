@@ -75,4 +75,46 @@ class NotificationManager: ObservableObject {
             // Silent
         }
     }
+
+    /// Mark a single notification read (used when the user taps it).
+    func markRead(_ notification: DopoNotification) async {
+        guard let token, !notification.isRead else { return }
+        do {
+            try await APIClient.shared.markNotificationsRead(token: token, ids: [notification.id])
+            await fetchNotifications()
+        } catch {
+            // Silent
+        }
+    }
+
+    // MARK: - Navigation target
+
+    /// Resolve a notification's `collectionId` to a full collection the user can access.
+    /// Returns nil if the notification references no collection, or it can no longer be
+    /// reached (deleted, or access revoked).
+    func resolveCollection(for notification: DopoNotification) async -> DopoCollection? {
+        guard let token, let collectionId = notification.collectionId else { return nil }
+        do {
+            let response = try await APIClient.shared.fetchCollections(token: token)
+            return response.collections.first { $0.id == collectionId }
+        } catch {
+            return nil
+        }
+    }
+
+    /// Resolve a notification's `saveId` to the full save — the specific piece of content
+    /// that was shared or added. Scoped to the notification's collection (there is no
+    /// fetch-by-id endpoint). Returns nil if the notification references no specific save,
+    /// or it can no longer be found (deleted).
+    func resolveSave(for notification: DopoNotification) async -> Save? {
+        guard let token,
+              let saveId = notification.saveId,
+              let collectionId = notification.collectionId else { return nil }
+        do {
+            let response = try await APIClient.shared.fetchLibrary(token: token, collectionId: collectionId, limit: 100)
+            return response.saves.first { $0.id == saveId }
+        } catch {
+            return nil
+        }
+    }
 }
