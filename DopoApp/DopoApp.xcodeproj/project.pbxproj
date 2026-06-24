@@ -16,6 +16,7 @@
 		4BAB1801AE91FF07FC13AB07 /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E6BC5AAFBF0D72A45DBA7A8 /* KeychainManager.swift */; };
 		4F58A5ED2BA39E5F0865A08D /* SaveDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEA97C08CAA78F1C34AA4263 /* SaveDetailView.swift */; };
 		5E944DD66E011AD2FBF4FE1D /* Save.swift in Sources */ = {isa = PBXBuildFile; fileRef = C01D8C0B72FAE2AFCBB16844 /* Save.swift */; };
+		F00DFACE0000000000000002 /* Profile.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00DFACE0000000000000001 /* Profile.swift */; };
 		635FB2BB15A43C189EFD03F3 /* ConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F701576ECCF3B2EC6440659 /* ConfigManager.swift */; };
 		6AE892958BF491F74660F785 /* AddToCollectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 897ECD9AC5789684CD599E9A /* AddToCollectionSheet.swift */; };
 		6BDC0F54822DE7C39F6C4912 /* NotificationBellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88F511CFB4FEACE43AC94BB9 /* NotificationBellView.swift */; };
@@ -100,6 +101,7 @@
 		B5DBD6AAC6D335B147766A86 /* IngestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IngestView.swift; sourceTree = "<group>"; };
 		BDA8A00EC9B5D6D90F4F38B3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		C01D8C0B72FAE2AFCBB16844 /* Save.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Save.swift; sourceTree = "<group>"; };
+		F00DFACE0000000000000001 /* Profile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Profile.swift; sourceTree = "<group>"; };
 		CEA97C08CAA78F1C34AA4263 /* SaveDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveDetailView.swift; sourceTree = "<group>"; };
 		D01EABDC4744FE2DB8477659 /* DiscoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoverView.swift; sourceTree = "<group>"; };
 		D57C28A6DB8D33093D0FBD73 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
@@ -285,6 +287,7 @@
 				9543A4ECBC8CEF4F5CB9E094 /* Collection.swift */,
 				5B097236AF315D5E85092CE6 /* Notification.swift */,
 				C01D8C0B72FAE2AFCBB16844 /* Save.swift */,
+				F00DFACE0000000000000001 /* Profile.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -419,6 +422,7 @@
 				F58C1F6E095A0992D70662F1 /* ProfileView.swift in Sources */,
 				C444E0ECCBC9AB6049A73C60 /* RootView.swift in Sources */,
 				5E944DD66E011AD2FBF4FE1D /* Save.swift in Sources */,
+				F00DFACE0000000000000002 /* Profile.swift in Sources */,
 				26B38EA8410564BB7B3F44F3 /* SaveCard.swift in Sources */,
 				4F58A5ED2BA39E5F0865A08D /* SaveDetailView.swift in Sources */,
 				01A5AAE2A394F220B7639C7A /* Theme.swift in Sources */,
@@ -516,7 +520,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 8CTNYTA3T6;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -623,7 +627,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8CTNYTA3T6;
 				ENABLE_NS_ASSERTIONS = NO;
