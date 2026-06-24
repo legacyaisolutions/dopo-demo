@@ -12,6 +12,17 @@ class AuthManager: ObservableObject {
     private let tokenKey = DopoKeychain.accessTokenKey
     private let refreshTokenKey = DopoKeychain.refreshTokenKey
 
+    // Serializes concurrent refresh attempts so only one runs at a time.
+    // Subsequent 401s wait on this task instead of starting a new refresh
+    // (which would try the already-rotated refresh token and fail).
+    private var activeRefreshTask: Task<RefreshOutcome, Never>?
+
+    private enum RefreshOutcome {
+        case success
+        case definiteFailure  // server explicitly rejected the token
+        case networkError     // could not reach server; token may still be valid
+    }
+
     struct AuthUser: Codable {
         let id: String
         let email: String?
@@ -69,7 +80,7 @@ class AuthManager: ObservableObject {
             request.setValue(DopoConfig.supabaseAnonKey, forHTTPHeaderField: "apikey")
             let (data, response) = try await URLSession.shared.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse else {
-                // Non-HTTP response (shouldn't happen) — keep existing session alive
+                // Non-HTTP response — keep existing session alive
                 isAuthenticated = true
                 isLoading = false
                 return
@@ -77,18 +88,21 @@ class AuthManager: ObservableObject {
 
             if httpResponse.statusCode == 401 {
                 // Token expired — try to refresh before giving up
-                let refreshed = await attemptTokenRefresh()
-                if !refreshed {
-                    logout()
+                let outcome = await performRefresh()
+                switch outcome {
+                case .success: break
+                case .definiteFailure: logout()
+                case .networkError:
+                    // Can't reach server to refresh — keep the session alive.
+                    // The next API call will retry if still offline.
+                    isAuthenticated = true
                 }
                 isLoading = false
                 return
             }
 
             guard httpResponse.statusCode == 200 else {
-                // Server error (5xx, 429, etc.) — don't destroy the session;
-                // the token may still be valid and the next real request will
-                // surface a 401 if it isn't.
+                // Server error (5xx, 429, etc.) — don't destroy the session.
                 isAuthenticated = true
                 isLoading = false
                 return
@@ -98,10 +112,8 @@ class AuthManager: ObservableObject {
             currentUser = user
             isAuthenticated = true
         } catch {
-            // Network error (no connectivity, timeout, etc.) — keep the stored
-            // token alive so the user isn't signed out just because of a bad
-            // connection at launch. A real 401 from the next API call will
-            // trigger handleUnauthorized() if the token truly expired.
+            // Network error at launch — keep the stored token alive.
+            // A real 401 from the next API call will trigger handleUnauthorized().
             isAuthenticated = true
         }
         isLoading = false
@@ -187,8 +199,24 @@ class AuthManager: ObservableObject {
 
     // MARK: - Token Refresh
 
-    private func attemptTokenRefresh() async -> Bool {
-        guard let refresh = refreshToken else { return false }
+    // Serialized entry point — if a refresh is already in-flight, callers await
+    // the same Task instead of starting a second one (which would use the
+    // already-rotated refresh token and always fail).
+    private func performRefresh() async -> RefreshOutcome {
+        if let existing = activeRefreshTask {
+            return await existing.value
+        }
+        let task = Task<RefreshOutcome, Never> { [weak self] in
+            await self?.attemptTokenRefresh() ?? .definiteFailure
+        }
+        activeRefreshTask = task
+        let outcome = await task.value
+        activeRefreshTask = nil
+        return outcome
+    }
+
+    private func attemptTokenRefresh() async -> RefreshOutcome {
+        guard let refresh = refreshToken else { return .definiteFailure }
         do {
             let body = ["refresh_token": refresh]
             var request = URLRequest(url: URL(string: "\(DopoConfig.authURL)/token?grant_type=refresh_token")!)
@@ -198,13 +226,12 @@ class AuthManager: ObservableObject {
             request.httpBody = try JSONEncoder().encode(body)
 
             let (data, response) = try await URLSession.shared.data(for: request)
-            guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-                return false
-            }
+            guard let httpResponse = response as? HTTPURLResponse else { return .networkError }
+            guard httpResponse.statusCode == 200 else { return .definiteFailure }
 
             let authResponse = try JSONDecoder().decode(AuthResponse.self, from: data)
             guard let newToken = authResponse.accessToken, let user = authResponse.user else {
-                return false
+                return .definiteFailure
             }
 
             try? KeychainManager.save(key: tokenKey, value: newToken)
@@ -213,17 +240,24 @@ class AuthManager: ObservableObject {
             }
             currentUser = user
             isAuthenticated = true
-            return true
+            return .success
         } catch {
-            return false
+            return .networkError
         }
     }
 
     private func handleUnauthorized() async {
-        let refreshed = await attemptTokenRefresh()
-        if !refreshed {
+        let outcome = await performRefresh()
+        switch outcome {
+        case .success: break
+        case .definiteFailure:
             sessionExpired = true
             logout()
+        case .networkError:
+            // Can't reach the server right now — don't destroy the session.
+            // The user can keep working; the next successful API call will
+            // confirm whether the token is still valid.
+            break
         }
     }
 }
