@@ -1274,8 +1274,29 @@ async function handleAuth() {
     accessToken = data.access_token;
     currentUser = data.user;
     localStorage.setItem("dopo_token", accessToken);
+    if (data.refresh_token) localStorage.setItem("dopo_refresh_token", data.refresh_token);
     showApp();
   } catch (e) { errorEl.textContent = "Network error. Try again."; errorEl.className = "auth-error show"; }
+}
+
+async function attemptTokenRefresh() {
+  const refreshToken = localStorage.getItem("dopo_refresh_token");
+  if (!refreshToken) return false;
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    });
+    if (!resp.ok) return false;
+    const data = await resp.json();
+    if (!data.access_token) return false;
+    accessToken = data.access_token;
+    currentUser = data.user;
+    localStorage.setItem("dopo_token", data.access_token);
+    if (data.refresh_token) localStorage.setItem("dopo_refresh_token", data.refresh_token);
+    return true;
+  } catch { return false; }
 }
 
 async function checkExistingSession() {
@@ -1284,9 +1305,25 @@ async function checkExistingSession() {
   try {
     const resp = await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: { Authorization: `Bearer ${token}`, apikey: SUPABASE_ANON_KEY } });
     if (resp.ok) { const user = await resp.json(); accessToken = token; currentUser = user; return true; }
-  } catch {}
-  localStorage.removeItem("dopo_token");
-  return false;
+    if (resp.status === 401) {
+      // Token expired — try silent refresh before giving up
+      const refreshed = await attemptTokenRefresh();
+      if (!refreshed) {
+        localStorage.removeItem("dopo_token");
+        localStorage.removeItem("dopo_refresh_token");
+        return false;
+      }
+      return true;
+    }
+    // Server error (5xx, 429, etc.) — keep the token; it may still be valid
+    accessToken = token;
+    return true;
+  } catch {
+    // Network error at page load — keep the token so the user isn't signed out
+    // just because of a momentary connectivity issue
+    accessToken = token;
+    return true;
+  }
 }
 
 function handleSignOut() {
@@ -1297,6 +1334,7 @@ function handleSignOut() {
   collections = [];
   currentSaves = [];
   localStorage.removeItem("dopo_token");
+  localStorage.removeItem("dopo_refresh_token");
   document.getElementById("app").style.display = "none";
   document.getElementById("authOverlay").style.display = "flex";
   // Clear form fields
