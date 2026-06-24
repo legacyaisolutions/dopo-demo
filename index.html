@@ -47,7 +47,8 @@
   }
   .logo-sub { font-size: 12px; color: var(--text-dim); font-family: 'Space Mono', monospace; letter-spacing: 2px; text-transform: uppercase; }
   .header-right { display: flex; align-items: center; gap: 10px; }
-  .user-badge { font-size: 12px; color: var(--text-muted); background: var(--surface); padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); }
+  .user-badge { font-size: 12px; color: var(--text-muted); background: var(--surface); padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); cursor: pointer; transition: border-color 0.2s, color 0.2s; }
+  .user-badge:hover { border-color: var(--accent); color: var(--text); }
   .sign-out-btn {
     font-size: 12px; color: var(--text-dim); background: none; border: 1px solid var(--border);
     padding: 6px 14px; border-radius: 20px; cursor: pointer; font-family: 'DM Sans', sans-serif;
@@ -542,6 +543,53 @@
     transition: all 0.15s;
   }
   .collab-role-change:hover { border-color: var(--accent); color: var(--accent); }
+  /* User search dropdown in invite section */
+  .collab-search-wrap { position: relative; flex: 1; }
+  .collab-search-results {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 100; overflow: hidden;
+    display: none;
+  }
+  .collab-search-results.show { display: block; }
+  .collab-search-result-item {
+    display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+    cursor: pointer; transition: background 0.1s;
+  }
+  .collab-search-result-item:hover { background: var(--surface-hover); }
+  .collab-search-avatar {
+    width: 30px; height: 30px; border-radius: 50%; background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
+  }
+  .collab-search-name { font-size: 13px; color: var(--text); }
+  .collab-search-sub { font-size: 11px; color: var(--text-dim); }
+  .collab-selected-chip {
+    display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+    background: var(--accent-glow); border: 1px solid var(--accent); border-radius: 8px;
+    font-size: 13px; color: var(--accent);
+  }
+  .collab-selected-chip button {
+    background: none; border: none; color: var(--accent); cursor: pointer; font-size: 14px; padding: 0 2px;
+  }
+  /* Profile modal */
+  .profile-field-group { margin-bottom: 14px; }
+  .profile-field-label { font-size: 11px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+  .profile-field-input {
+    width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 14px; color: var(--text); font-size: 14px; font-family: 'DM Sans', sans-serif;
+    outline: none; transition: border-color 0.2s; box-sizing: border-box;
+  }
+  .profile-field-input:focus { border-color: var(--accent); }
+  .profile-toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 0; border-top: 1px solid var(--border); margin-top: 4px;
+  }
+  .profile-toggle-label { font-size: 14px; color: var(--text); }
+  .profile-toggle-sub { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  .profile-username-prefix { position: relative; }
+  .profile-username-prefix::before { content: '@'; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-dim); font-size: 14px; pointer-events: none; }
+  .profile-username-prefix .profile-field-input { padding-left: 26px; }
   .viewer-notice {
     background: rgba(90,90,114,0.1); border: 1px solid var(--border); border-radius: 8px;
     padding: 10px 14px; font-size: 13px; color: var(--text-muted); margin-bottom: 16px;
@@ -875,7 +923,7 @@
   <header class="header">
     <div><div class="logo">dopo</div><div class="logo-sub">content library</div></div>
     <div class="header-right">
-      <span id="userBadge" class="user-badge"></span>
+      <span id="userBadge" class="user-badge" onclick="openProfileModal()" title="Edit profile"></span>
       <div style="position:relative;">
         <button class="notif-bell" id="notifBell" onclick="toggleNotifPanel()" title="Notifications">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -1112,7 +1160,14 @@
       <div class="share-section-title">Collaborators</div>
       <div id="collabList" class="collab-list"></div>
       <div class="collab-invite-row">
-        <input id="collabEmail" class="collab-invite-input" type="email" placeholder="Email address" onkeydown="if(event.key==='Enter')inviteCollaborator()" />
+        <div class="collab-search-wrap">
+          <div id="collabSelectedChip" style="display:none;" class="collab-selected-chip">
+            <span id="collabSelectedLabel"></span>
+            <button onclick="clearCollabSelection()" title="Clear">&times;</button>
+          </div>
+          <input id="collabSearch" class="collab-invite-input" type="text" placeholder="Name, username, or email" oninput="onCollabSearchInput(this.value)" onkeydown="if(event.key==='Enter')inviteCollaborator()" style="width:100%;" />
+          <div id="collabSearchResults" class="collab-search-results"></div>
+        </div>
         <select id="collabRoleSelect" class="collab-role-select">
           <option value="editor">Collaborator</option>
           <option value="viewer">View only</option>
@@ -1135,6 +1190,42 @@
     <div class="modal-actions">
       <button class="modal-btn modal-btn-secondary" onclick="closeRenameCollectionModal()">Cancel</button>
       <button class="modal-btn modal-btn-primary" onclick="renameCollection()">Save</button>
+    </div>
+  </div>
+</div>
+<!-- Profile Modal -->
+<div id="profileModal" class="modal-overlay hidden">
+  <div class="modal-box" style="max-width:460px;">
+    <h3>Edit Profile</h3>
+    <div id="profileModalError" style="display:none;color:var(--error);font-size:13px;margin-bottom:12px;padding:8px 12px;background:rgba(248,113,113,0.1);border-radius:8px;"></div>
+    <div class="profile-field-group">
+      <div class="profile-field-label">Display Name</div>
+      <input id="profileDisplayName" class="profile-field-input" type="text" placeholder="Your name" autocomplete="off" />
+    </div>
+    <div class="profile-field-group">
+      <div class="profile-field-label">Username</div>
+      <div class="profile-username-prefix">
+        <input id="profileUsername" class="profile-field-input" type="text" placeholder="username" autocomplete="off" autocapitalize="none" />
+      </div>
+    </div>
+    <div class="profile-field-group">
+      <div class="profile-field-label">Bio</div>
+      <textarea id="profileBio" class="profile-field-input" placeholder="Tell the world about yourself" rows="3" style="resize:vertical;"></textarea>
+    </div>
+    <div class="profile-field-group">
+      <div class="profile-field-label">Website</div>
+      <input id="profileWebsite" class="profile-field-input" type="url" placeholder="https://" autocomplete="off" />
+    </div>
+    <div class="profile-toggle-row">
+      <div>
+        <div class="profile-toggle-label">Public profile</div>
+        <div class="profile-toggle-sub">Others can find and view your profile</div>
+      </div>
+      <button id="profilePublicToggle" class="toggle-switch" onclick="document.getElementById('profilePublicToggle').classList.toggle('on')"></button>
+    </div>
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="modal-btn modal-btn-secondary" onclick="closeProfileModal()">Cancel</button>
+      <button id="profileSaveBtn" class="modal-btn modal-btn-primary" onclick="saveProfile()">Save Changes</button>
     </div>
   </div>
 </div>
@@ -1161,6 +1252,9 @@ let favoritesOnly = false;
 let batchMode = false;
 let selectedIds = new Set();
 let featureFlags = {}; // Loaded from /config endpoint on init
+let selectedCollabUserId = null;
+let selectedCollabUserLabel = null;
+let collabSearchTimeout = null;
 const WEB_APP_VERSION = "1.0.0";
 
 // Standard headers for all authenticated API calls (includes platform tracking)
@@ -1359,6 +1453,7 @@ function showApp() {
   loadCollections();
   loadLibrary();
   startNotifPolling();
+  loadProfileBadge();
 }
 
 async function handleIngest() {
@@ -2018,7 +2113,7 @@ function closeShareModal() {
   shareCollectionId = null;
   shareCollectionData = null;
   document.getElementById("collabStatus").textContent = "";
-  document.getElementById("collabEmail").value = "";
+  clearCollabSelection();
   loadCollections(); // refresh counts/state
 }
 
@@ -2097,27 +2192,99 @@ async function loadCollaborators(collId) {
   }
 }
 
+function onCollabSearchInput(value) {
+  const query = value.trim();
+  clearTimeout(collabSearchTimeout);
+  if (selectedCollabUserId) return; // already selected
+  if (query.length < 2) {
+    document.getElementById("collabSearchResults").classList.remove("show");
+    return;
+  }
+  collabSearchTimeout = setTimeout(() => searchCollabUsers(query), 400);
+}
+
+async function searchCollabUsers(query) {
+  const resultsEl = document.getElementById("collabSearchResults");
+  resultsEl.innerHTML = `<div style="padding:10px 14px;font-size:13px;color:var(--text-dim);">Searching...</div>`;
+  resultsEl.classList.add("show");
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/library/collaborators?search=${encodeURIComponent(query)}`, {
+      headers: apiHeaders(),
+    });
+    if (!resp.ok) { resultsEl.classList.remove("show"); return; }
+    const data = await resp.json();
+    const users = data.users || [];
+    if (users.length === 0) {
+      resultsEl.innerHTML = `<div style="padding:10px 14px;font-size:13px;color:var(--text-dim);">No users found</div>`;
+    } else {
+      resultsEl.innerHTML = users.map(u => {
+        const label = u.display_name || (u.username ? `@${u.username}` : u.email || "Unknown");
+        const sub = u.username && u.display_name ? `@${u.username}` : "";
+        const initial = (label[0] || "?").toUpperCase();
+        return `<div class="collab-search-result-item" onclick="selectCollabUser('${esc(u.id)}','${esc(label)}')">
+          <div class="collab-search-avatar">${esc(initial)}</div>
+          <div><div class="collab-search-name">${esc(label)}</div>${sub ? `<div class="collab-search-sub">${esc(sub)}</div>` : ""}</div>
+        </div>`;
+      }).join("");
+    }
+  } catch (e) {
+    resultsEl.classList.remove("show");
+  }
+}
+
+function selectCollabUser(id, label) {
+  selectedCollabUserId = id;
+  selectedCollabUserLabel = label;
+  document.getElementById("collabSearch").style.display = "none";
+  document.getElementById("collabSearchResults").classList.remove("show");
+  const chip = document.getElementById("collabSelectedChip");
+  document.getElementById("collabSelectedLabel").textContent = label;
+  chip.style.display = "flex";
+}
+
+function clearCollabSelection() {
+  selectedCollabUserId = null;
+  selectedCollabUserLabel = null;
+  document.getElementById("collabSearch").style.display = "";
+  document.getElementById("collabSearch").value = "";
+  document.getElementById("collabSelectedChip").style.display = "none";
+  document.getElementById("collabSearchResults").classList.remove("show");
+}
+
 async function inviteCollaborator() {
-  const emailInput = document.getElementById("collabEmail");
+  const searchInput = document.getElementById("collabSearch");
   const roleSelect = document.getElementById("collabRoleSelect");
   const status = document.getElementById("collabStatus");
-  const email = emailInput.value.trim();
   const role = roleSelect.value;
-  if (!email || !shareCollectionId) return;
+  if (!shareCollectionId) return;
+
   status.textContent = "Inviting...";
   status.style.color = "var(--text-muted)";
+
   try {
+    let body;
+    let displayLabel;
+    if (selectedCollabUserId) {
+      body = { collection_id: shareCollectionId, user_id: selectedCollabUserId, role };
+      displayLabel = selectedCollabUserLabel;
+    } else {
+      const email = searchInput.value.trim();
+      if (!email) { status.textContent = ""; return; }
+      body = { collection_id: shareCollectionId, email, role };
+      displayLabel = email;
+    }
+
     const resp = await fetch(`${SUPABASE_URL}/functions/v1/library/collaborators`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}`, apikey: SUPABASE_ANON_KEY },
-      body: JSON.stringify({ collection_id: shareCollectionId, email, role }),
+      headers: apiHeaders(),
+      body: JSON.stringify(body),
     });
     const data = await resp.json();
     if (resp.ok) {
       const roleLabel = role === "viewer" ? "viewer" : "collaborator";
-      status.textContent = data.status === "invited" ? `${email} added as ${roleLabel}!` : `Invite saved — ${email} will get access as ${roleLabel} when they sign up`;
+      status.textContent = `${displayLabel} added as ${roleLabel}!`;
       status.style.color = "var(--success)";
-      emailInput.value = "";
+      clearCollabSelection();
       loadCollaborators(shareCollectionId);
     } else {
       status.textContent = data.error || "Failed to invite";
@@ -2270,6 +2437,93 @@ function openRenameCollectionModal() {
 
 function closeRenameCollectionModal() {
   document.getElementById("renameCollModal").classList.add("hidden");
+}
+
+// ---- Profile Modal ----
+
+async function loadProfileBadge() {
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/library/profile`, { headers: apiHeaders() });
+    if (!resp.ok) return;
+    const data = await resp.json();
+    const profile = data.profile;
+    if (!profile) return;
+    const badge = document.getElementById("userBadge");
+    badge.textContent = profile.display_name || (profile.username ? `@${profile.username}` : currentUser?.email || "");
+    badge._profileData = profile;
+  } catch (e) { /* silently fail */ }
+}
+
+async function openProfileModal() {
+  const modal = document.getElementById("profileModal");
+  modal.classList.remove("hidden");
+  document.getElementById("profileModalError").style.display = "none";
+  const badge = document.getElementById("userBadge");
+  const cached = badge._profileData;
+  if (cached) {
+    document.getElementById("profileDisplayName").value = cached.display_name || "";
+    document.getElementById("profileUsername").value = cached.username || "";
+    document.getElementById("profileBio").value = cached.bio || "";
+    document.getElementById("profileWebsite").value = cached.website_url || "";
+    const toggle = document.getElementById("profilePublicToggle");
+    toggle.classList.toggle("on", !!cached.is_public);
+  } else {
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/library/profile`, { headers: apiHeaders() });
+      if (resp.ok) {
+        const data = await resp.json();
+        const p = data.profile || {};
+        document.getElementById("profileDisplayName").value = p.display_name || "";
+        document.getElementById("profileUsername").value = p.username || "";
+        document.getElementById("profileBio").value = p.bio || "";
+        document.getElementById("profileWebsite").value = p.website_url || "";
+        document.getElementById("profilePublicToggle").classList.toggle("on", !!p.is_public);
+        badge._profileData = p;
+      }
+    } catch (e) { /* ignore */ }
+  }
+}
+
+function closeProfileModal() {
+  document.getElementById("profileModal").classList.add("hidden");
+}
+
+async function saveProfile() {
+  const btn = document.getElementById("profileSaveBtn");
+  const errEl = document.getElementById("profileModalError");
+  errEl.style.display = "none";
+  btn.disabled = true;
+  btn.textContent = "Saving...";
+  const body = {
+    display_name: document.getElementById("profileDisplayName").value.trim(),
+    username: document.getElementById("profileUsername").value.trim().toLowerCase(),
+    bio: document.getElementById("profileBio").value.trim(),
+    website_url: document.getElementById("profileWebsite").value.trim(),
+    is_public: document.getElementById("profilePublicToggle").classList.contains("on"),
+  };
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/library/profile`, {
+      method: "PATCH",
+      headers: apiHeaders(),
+      body: JSON.stringify(body),
+    });
+    const data = await resp.json();
+    if (resp.ok) {
+      const profile = data.profile;
+      const badge = document.getElementById("userBadge");
+      badge.textContent = profile.display_name || (profile.username ? `@${profile.username}` : currentUser?.email || "");
+      badge._profileData = profile;
+      closeProfileModal();
+    } else {
+      errEl.textContent = data.error || "Failed to save profile";
+      errEl.style.display = "block";
+    }
+  } catch (e) {
+    errEl.textContent = "Network error. Please try again.";
+    errEl.style.display = "block";
+  }
+  btn.disabled = false;
+  btn.textContent = "Save Changes";
 }
 
 async function renameCollection() {
@@ -2685,6 +2939,14 @@ document.addEventListener("click", (e) => {
   if (!bell.contains(e.target) && !panel.contains(e.target)) {
     notifPanelOpen = false;
     panel.classList.remove("open");
+  }
+});
+
+document.addEventListener("click", (e) => {
+  const wrap = document.querySelector(".collab-search-wrap");
+  const results = document.getElementById("collabSearchResults");
+  if (wrap && results && !wrap.contains(e.target)) {
+    results.classList.remove("show");
   }
 });
 
