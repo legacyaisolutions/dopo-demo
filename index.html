@@ -668,6 +668,11 @@
     align-items: center; justify-content: center; font-size: 14px;
     background: var(--accent-glow); margin-top: 2px;
   }
+  .notif-item.clickable { cursor: pointer; }
+  .notif-chevron {
+    flex-shrink: 0; align-self: center; color: var(--text-dim);
+    font-size: 18px; line-height: 1; padding-left: 4px;
+  }
   /* Create New in Add-to-Collection */
   .coll-create-new-btn {
     width: 100%; display: flex; align-items: center; gap: 10px; padding: 10px 14px;
@@ -3000,13 +3005,19 @@ function renderNotifications(notifications, unreadCount) {
       : n.type === "collaborator_invited" ? "🤝"
       : n.type === "collaborator_accepted" ? "✅" : "🔔";
     const timeAgo = formatTimeAgo(n.created_at);
-    return `<div class="notif-item${n.is_read ? "" : " unread"}">
+    // Clickable when the notification points somewhere — a specific save or a collection.
+    const hasTarget = !!(n.save_id || n.collection_id);
+    const clickAttr = hasTarget
+      ? ` onclick="onNotificationClick('${n.id}','${n.save_id || ""}','${n.collection_id || ""}')"`
+      : "";
+    return `<div class="notif-item${n.is_read ? "" : " unread"}${hasTarget ? " clickable" : ""}"${clickAttr}>
       <div class="notif-icon">${icon}</div>
       <div class="notif-content">
         <div class="notif-title">${esc(n.title)}</div>
         ${n.body ? `<div class="notif-time">${esc(n.body)}</div>` : ""}
         <div class="notif-time">${timeAgo}</div>
       </div>
+      ${hasTarget ? '<div class="notif-chevron">›</div>' : ""}
     </div>`;
   }).join("");
 }
@@ -3034,6 +3045,53 @@ async function markAllNotificationsRead() {
     });
     loadNotifications();
   } catch (e) { console.warn("[Notifications] Failed to mark read:", e); }
+}
+
+// Mark a single notification read (when the user clicks it).
+async function markNotificationRead(id) {
+  try {
+    await fetch(`${SUPABASE_URL}/functions/v1/library/notifications`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}`, apikey: SUPABASE_ANON_KEY },
+      body: JSON.stringify({ ids: [id] })
+    });
+    pollUnreadCount();
+  } catch (e) { console.warn("[Notifications] Failed to mark read:", e); }
+}
+
+// Clicking a notification: mark it read, then deep-link to its target. A specific
+// shared/added piece of content (save_id) wins; a collection-only notification opens
+// the collection. Mirrors the iOS behavior.
+async function onNotificationClick(notifId, saveId, collId) {
+  markNotificationRead(notifId);
+  // Close the panel
+  notifPanelOpen = false;
+  document.getElementById("notifPanel").classList.remove("open");
+
+  if (saveId && collId) {
+    await openCollectionSave(collId, saveId);
+  } else if (collId) {
+    setCollection(collId);
+  }
+}
+
+// Navigate to a collection and open a specific save within it. There is no
+// fetch-save-by-id endpoint, so load the collection's library (which scopes by id)
+// and open the save from it; if it can't be found, we stay on the collection.
+async function openCollectionSave(collId, saveId) {
+  currentCollection = collId;
+  const coll = collections.find(c => c.id === collId);
+  activeCollectionRole = (coll && !coll.is_owner) ? (coll.role || "viewer") : null;
+  switchView("library", null);
+  renderCollectionsBar();
+  enforceRoleUI();
+  // Clear any active search so the full collection (incl. the target save) loads.
+  const searchInput = document.getElementById("searchInput");
+  if (searchInput) searchInput.value = "";
+  await loadLibrary("");
+  if (currentSaves.find(s => s.id === saveId)) {
+    openDetailModal(saveId);
+  }
 }
 
 function startNotifPolling() {
