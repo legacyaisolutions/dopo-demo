@@ -86,7 +86,7 @@ struct CollectionsView: View {
                     Task { await loadCollections() }
                 }
             }
-            .sheet(item: $selectedCollection) { coll in
+            .sheet(item: $selectedCollection, onDismiss: { Task { await loadCollections() } }) { coll in
                 CollectionDetailView(collection: coll)
             }
             .refreshable { await loadCollections() }
@@ -955,8 +955,12 @@ struct ShareCollectionView: View {
     @State private var shareToken: String?
     @State private var collaborators: [Collaborator] = []
     @State private var isLoadingCollabs = true
-    @State private var inviteEmail = ""
+    @State private var inviteQuery = ""
     @State private var inviteRole = "viewer"
+    @State private var selectedUser: UserSearchResult? = nil
+    @State private var userSearchResults: [UserSearchResult] = []
+    @State private var isSearchingUsers = false
+    @State private var searchDebounceTask: Task<Void, Never>? = nil
     @State private var isInviting = false
     @State private var toastMessage: String?
 
@@ -1046,38 +1050,108 @@ struct ShareCollectionView: View {
                                 .foregroundColor(.dopoTextDim)
                                 .tracking(1.5)
 
-                            HStack(spacing: 8) {
-                                TextField("Email address", text: $inviteEmail)
-                                    .textFieldStyle(DopoTextFieldStyle())
-                                    .textInputAutocapitalization(.never)
-                                    .autocorrectionDisabled(true)
-                                    .keyboardType(.emailAddress)
+                            VStack(spacing: 8) {
+                                HStack(spacing: 8) {
+                                    TextField("Search by name, username or email", text: $inviteQuery)
+                                        .textFieldStyle(DopoTextFieldStyle())
+                                        .textInputAutocapitalization(.never)
+                                        .autocorrectionDisabled(true)
+                                        .onChange(of: inviteQuery) { newValue in
+                                            if selectedUser != nil { selectedUser = nil }
+                                            searchDebounceTask?.cancel()
+                                            guard newValue.count >= 2 else {
+                                                userSearchResults = []
+                                                return
+                                            }
+                                            searchDebounceTask = Task {
+                                                try? await Task.sleep(nanoseconds: 400_000_000)
+                                                guard !Task.isCancelled else { return }
+                                                await performUserSearch(newValue)
+                                            }
+                                        }
 
-                                Menu {
-                                    Button(action: { inviteRole = "viewer" }) {
-                                        Label("Viewer", systemImage: "eye")
+                                    Menu {
+                                        Button(action: { inviteRole = "viewer" }) {
+                                            Label("Viewer", systemImage: "eye")
+                                        }
+                                        Button(action: { inviteRole = "editor" }) {
+                                            Label("Collaborator", systemImage: "person.2")
+                                        }
+                                    } label: {
+                                        HStack(spacing: 4) {
+                                            Image(systemName: inviteRole == "editor" ? "person.2" : "eye")
+                                                .font(.system(size: 11))
+                                            Text(inviteRole == "editor" ? "Collaborator" : "Viewer")
+                                                .font(.system(size: 12, weight: .medium))
+                                            Image(systemName: "chevron.down")
+                                                .font(.system(size: 9))
+                                        }
+                                        .foregroundColor(.dopoTextMuted)
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 10)
+                                        .background(Color.dopoSurface)
+                                        .cornerRadius(10)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .stroke(Color.dopoBorder, lineWidth: 1)
+                                        )
                                     }
-                                    Button(action: { inviteRole = "editor" }) {
-                                        Label("Collaborator", systemImage: "person.2")
+                                }
+
+                                if isSearchingUsers {
+                                    HStack {
+                                        Spacer()
+                                        ProgressView().tint(.dopoTextDim).scaleEffect(0.8)
+                                        Text("Searching...")
+                                            .font(.system(size: 12))
+                                            .foregroundColor(.dopoTextDim)
+                                        Spacer()
                                     }
-                                } label: {
-                                    HStack(spacing: 4) {
-                                        Image(systemName: inviteRole == "editor" ? "person.2" : "eye")
-                                            .font(.system(size: 11))
-                                        Text(inviteRole == "editor" ? "Collaborator" : "Viewer")
-                                            .font(.system(size: 12, weight: .medium))
-                                        Image(systemName: "chevron.down")
-                                            .font(.system(size: 9))
+                                    .padding(.vertical, 6)
+                                } else if !userSearchResults.isEmpty {
+                                    VStack(spacing: 0) {
+                                        ForEach(userSearchResults) { result in
+                                            Button(action: {
+                                                HapticManager.impact(.light)
+                                                selectedUser = result
+                                                inviteQuery = result.displayLabel
+                                                userSearchResults = []
+                                            }) {
+                                                HStack(spacing: 10) {
+                                                    ZStack {
+                                                        Circle()
+                                                            .fill(Color.dopoAccent.opacity(0.2))
+                                                            .frame(width: 32, height: 32)
+                                                        Text(result.avatarInitial)
+                                                            .font(.system(size: 13, weight: .semibold))
+                                                            .foregroundColor(.dopoAccent)
+                                                    }
+                                                    VStack(alignment: .leading, spacing: 1) {
+                                                        Text(result.displayLabel)
+                                                            .font(.system(size: 13, weight: .medium))
+                                                            .foregroundColor(.dopoText)
+                                                        if let subtitle = result.subtitleLabel {
+                                                            Text(subtitle)
+                                                                .font(.system(size: 11))
+                                                                .foregroundColor(.dopoTextMuted)
+                                                        }
+                                                    }
+                                                    Spacer()
+                                                    Image(systemName: "plus.circle.fill")
+                                                        .font(.system(size: 16))
+                                                        .foregroundColor(.dopoAccent.opacity(0.6))
+                                                }
+                                                .padding(.horizontal, 12)
+                                                .padding(.vertical, 10)
+                                            }
+                                            if result.id != userSearchResults.last?.id {
+                                                Divider().background(Color.dopoBorder).padding(.leading, 54)
+                                            }
+                                        }
                                     }
-                                    .foregroundColor(.dopoTextMuted)
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 10)
                                     .background(Color.dopoSurface)
                                     .cornerRadius(10)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 10)
-                                            .stroke(Color.dopoBorder, lineWidth: 1)
-                                    )
+                                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.dopoBorder, lineWidth: 1))
                                 }
                             }
 
@@ -1092,16 +1166,17 @@ struct ShareCollectionView: View {
                                         Image(systemName: "paperplane.fill")
                                             .font(.system(size: 12))
                                     }
-                                    Text("Send Invite")
+                                    Text(selectedUser != nil ? "Invite \(selectedUser!.displayLabel)" : "Send Invite")
                                         .font(.system(size: 14, weight: .semibold))
+                                        .lineLimit(1)
                                 }
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 12)
-                                .background(inviteEmail.isEmpty ? Color.dopoTextDim : Color.dopoAccent)
+                                .background(inviteQuery.isEmpty ? Color.dopoTextDim : Color.dopoAccent)
                                 .cornerRadius(10)
                             }
-                            .disabled(inviteEmail.isEmpty || isInviting)
+                            .disabled(inviteQuery.isEmpty || isInviting)
                         }
 
                         // Current collaborators
@@ -1216,12 +1291,23 @@ struct ShareCollectionView: View {
         guard let token = authManager.accessToken else { return }
         isInviting = true
         do {
-            try await APIClient.shared.inviteCollaborator(
-                token: token, collectionId: collection.id, email: inviteEmail, role: inviteRole
-            )
-            HapticManager.notification(.success)
-            toastMessage = "Invite sent to \(inviteEmail)"
-            inviteEmail = ""
+            if let user = selectedUser {
+                try await APIClient.shared.inviteCollaboratorById(
+                    token: token, collectionId: collection.id, userId: user.id, role: inviteRole
+                )
+                HapticManager.notification(.success)
+                toastMessage = "Invited \(user.displayLabel)"
+            } else {
+                let email = inviteQuery.trimmingCharacters(in: .whitespaces)
+                try await APIClient.shared.inviteCollaborator(
+                    token: token, collectionId: collection.id, email: email, role: inviteRole
+                )
+                HapticManager.notification(.success)
+                toastMessage = "Invite sent to \(email)"
+            }
+            selectedUser = nil
+            inviteQuery = ""
+            userSearchResults = []
             await loadCollaborators()
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) { toastMessage = nil }
         } catch {
@@ -1230,6 +1316,17 @@ struct ShareCollectionView: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) { toastMessage = nil }
         }
         isInviting = false
+    }
+
+    private func performUserSearch(_ query: String) async {
+        guard let token = authManager.accessToken else { return }
+        isSearchingUsers = true
+        do {
+            userSearchResults = try await APIClient.shared.searchUsers(token: token, query: query)
+        } catch {
+            userSearchResults = []
+        }
+        isSearchingUsers = false
     }
 
     private func loadCollaborators() async {

@@ -5,6 +5,7 @@ enum APIError: LocalizedError {
     case serverError(Int)
     case networkError(Error)
     case decodingError(Error)
+    case requestError(String)
 
     var errorDescription: String? {
         switch self {
@@ -16,6 +17,8 @@ enum APIError: LocalizedError {
             return "Couldn't connect. Check your internet and try again."
         case .decodingError:
             return "Something went wrong. Please try again."
+        case .requestError(let message):
+            return message
         }
     }
 }
@@ -317,6 +320,75 @@ class APIClient {
         request.allHTTPHeaderFields = authHeaders(token)
         let body: [String: Any] = ["action": "batch_add_saves", "collection_id": collectionId, "save_ids": saveIds]
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        let _ = try await performRequest(request)
+    }
+
+    // MARK: - Profile
+
+    func fetchProfile(token: String) async throws -> UserProfile {
+        var request = URLRequest(url: URL(string: "\(DopoConfig.libraryURL)/profile")!)
+        request.allHTTPHeaderFields = authHeaders(token)
+        let (data, _) = try await performRequest(request)
+        do {
+            return try JSONDecoder().decode(ProfileResponse.self, from: data).profile
+        } catch {
+            throw APIError.decodingError(error)
+        }
+    }
+
+    func updateProfile(
+        token: String,
+        displayName: String,
+        username: String,
+        bio: String,
+        isPublic: Bool,
+        websiteUrl: String
+    ) async throws -> UserProfile {
+        var request = URLRequest(url: URL(string: "\(DopoConfig.libraryURL)/profile")!)
+        request.httpMethod = "PATCH"
+        request.allHTTPHeaderFields = authHeaders(token)
+        let body: [String: Any] = [
+            "display_name": displayName,
+            "username": username,
+            "bio": bio,
+            "is_public": isPublic,
+            "website_url": websiteUrl
+        ]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        let (data, httpResponse) = try await performRequest(request)
+        if httpResponse.statusCode >= 400 {
+            struct ErrorBody: Codable { let error: String }
+            if let err = try? JSONDecoder().decode(ErrorBody.self, from: data) {
+                throw APIError.requestError(err.error)
+            }
+            throw APIError.serverError(httpResponse.statusCode)
+        }
+        do {
+            return try JSONDecoder().decode(ProfileResponse.self, from: data).profile
+        } catch {
+            throw APIError.decodingError(error)
+        }
+    }
+
+    func searchUsers(token: String, query: String) async throws -> [UserSearchResult] {
+        var components = URLComponents(string: "\(DopoConfig.libraryURL)/collaborators")!
+        components.queryItems = [URLQueryItem(name: "search", value: query)]
+        var request = URLRequest(url: components.url!)
+        request.allHTTPHeaderFields = authHeaders(token)
+        let (data, _) = try await performRequest(request)
+        do {
+            return try JSONDecoder().decode(UserSearchResponse.self, from: data).users
+        } catch {
+            throw APIError.decodingError(error)
+        }
+    }
+
+    func inviteCollaboratorById(token: String, collectionId: String, userId: String, role: String) async throws {
+        var request = URLRequest(url: URL(string: "\(DopoConfig.libraryURL)/collaborators")!)
+        request.httpMethod = "POST"
+        request.allHTTPHeaderFields = authHeaders(token)
+        let body: [String: String] = ["collection_id": collectionId, "user_id": userId, "role": role]
+        request.httpBody = try JSONEncoder().encode(body)
         let _ = try await performRequest(request)
     }
 
