@@ -86,7 +86,7 @@ struct CollectionsView: View {
                     Task { await loadCollections() }
                 }
             }
-            .sheet(item: $selectedCollection) { coll in
+            .sheet(item: $selectedCollection, onDismiss: { Task { await loadCollections() } }) { coll in
                 CollectionDetailView(collection: coll)
             }
             .refreshable { await loadCollections() }

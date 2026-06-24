@@ -23,7 +23,7 @@ struct LibraryView: View {
 
     @State private var favoritesOnly = false
 
-    let platforms = ["all", "youtube", "instagram", "tiktok", "twitter", "facebook", "web"]
+    let platforms = ["all", "youtube", "instagram", "tiktok", "twitter", "facebook", "substack", "web"]
 
     var body: some View {
         NavigationStack {

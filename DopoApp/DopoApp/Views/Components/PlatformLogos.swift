@@ -24,18 +24,27 @@ struct PlatformLogo: View {
         case .tiktok:    return "PlatformLogos/tiktok-logo"
         case .twitter:   return "PlatformLogos/x-logo"
         case .facebook:  return "PlatformLogos/facebook-logo"
+        case .substack:  return nil
         case .web:       return nil
         }
     }
 
     var body: some View {
-        if let assetName {
+        if platform == .substack {
+            ZStack {
+                RoundedRectangle(cornerRadius: size * 0.22)
+                    .fill(Color(red: 1.0, green: 0.40, blue: 0.098))
+                    .frame(width: size, height: size)
+                Text("S")
+                    .font(.system(size: size * 0.65, weight: .black, design: .serif))
+                    .foregroundColor(.white)
+            }
+        } else if let assetName {
             Image(assetName)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: size, height: size)
         } else {
-            // Globe icon for web/other platforms
             Image(systemName: "globe")
                 .font(.system(size: size * 0.7, weight: .medium))
                 .foregroundColor(.dopoAccent)

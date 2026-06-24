@@ -117,7 +117,7 @@ struct SearchParsed: Codable {
 }
 
 enum PlatformTheme {
-    case youtube, instagram, tiktok, twitter, facebook, web
+    case youtube, instagram, tiktok, twitter, facebook, substack, web
 
     static func from(_ platform: String) -> PlatformTheme {
         switch platform.lowercased() {
@@ -126,6 +126,7 @@ enum PlatformTheme {
         case "tiktok": return .tiktok
         case "twitter": return .twitter
         case "facebook": return .facebook
+        case "substack": return .substack
         default: return .web
         }
     }
@@ -137,6 +138,7 @@ enum PlatformTheme {
         case .tiktok: return "TikTok"
         case .twitter: return "X"
         case .facebook: return "Facebook"
+        case .substack: return "Substack"
         case .web: return "Web"
         }
     }
@@ -148,6 +150,7 @@ enum PlatformTheme {
         case .tiktok: return "music.note"
         case .twitter: return "xmark"
         case .facebook: return "person.2.fill"
+        case .substack: return "doc.text.fill"
         case .web: return "globe"
         }
     }
